@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTC Sim Racing League</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>CTC Sim Racing League</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-view="drivers">Driver Standings</a></li>
+                    <li><a href="#" data-view="teams">Team Standings</a></li>
+                    <li><a href="#" data-view="races">Race Results</a></li>
+                    <li><a href="#" data-view="stats">Statistics</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="season-selector">
+            <label for="season">Season:</label>
+            <select id="season">
+                <option value="2025" selected>2025</option>
+                <!-- More seasons can be added here -->
+            </select>
+        </div>
+
+        <section id="drivers-view" class="view active">
+            <h2>Driver Standings</h2>
+            <div class="standings-table">
+                <table id="drivers-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Driver</th>
+                            <th>Team</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                            <th>Podiums</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Driver data will be loaded here -->
+                        <tr><td colspan="6" class="loading">Loading standings...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="chart-container">
+                <h3>Points Progression</h3>
+                <canvas id="driver-points-chart"></canvas>
+            </div>
+        </section>
+
+        <section id="teams-view" class="view">
+            <h2>Team Standings</h2>
+            <div class="standings-table">
+                <table id="teams-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Team</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                            <th>Podiums</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Team data will be loaded here -->
+                        <tr><td colspan="5" class="loading">Loading standings...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="chart-container">
+                <h3>Team Points Comparison</h3>
+                <canvas id="team-points-chart"></canvas>
+            </div>
+        </section>
+
+        <section id="races-view" class="view">
+            <h2>Race Results</h2>
+            <div class="race-selector">
+                <label for="race">Select Race:</label>
+                <select id="race">
+                    <!-- Race options will be loaded here -->
+                    <option value="">Loading races...</option>
+                </select>
+            </div>
+            <div class="race-results">
+                <table id="race-results-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Driver</th>
+                            <th>Team</th>
+                            <th>Time/Status</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Race results will be loaded here -->
+                        <tr><td colspan="5" class="loading">Select a race to view results</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="stats-view" class="view">
+            <h2>Season Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Fastest Laps</h3>
+                    <div id="fastest-laps">
+                        <!-- Fastest lap data will be loaded here -->
+                        <p class="loading">Loading statistics...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pole Positions</h3>
+                    <div id="pole-positions">
+                        <!-- Pole position data will be loaded here -->
+                        <p class="loading">Loading statistics...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Lead Laps</h3>
+                    <div id="lead-laps">
+                        <!-- Lead lap data will be loaded here -->
+                        <p class="loading">Loading statistics...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>DNFs</h3>
+                    <div id="dnfs">
+                        <!-- DNF data will be loaded here -->
+                        <p class="loading">Loading statistics...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 CTC Sim Racing League</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
