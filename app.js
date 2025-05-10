@@ -98,6 +98,8 @@ async function loadSeasonData() {
             // Add race to race selector
             addRaceOption(race);
         }
+        document.getElementById('race').selectedIndex = 0;
+        await loadRaceResults();
         
         // Process results to generate standings
         const standings = calculateStandings(allResults, seasonData);
@@ -293,7 +295,7 @@ async function loadRaceResults() {
     if (!race) return;
     
     try {
-        const results = await fetchJSON(`data/${season}/races/${race}.json`);
+        const results = await fetchJSON(`data/seasons/${season}/races/${race}.json`);
         displayRaceResults(results);
     } catch (error) {
         console.error('Error loading race results:', error);
