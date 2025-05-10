@@ -1,12 +1,10 @@
-// Main application JavaScript for CTC Sim Racing League
-
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize navigation
     initializeNavigation();
-    
-    // Load data based on selected season
-    loadSeasonData();
-    
+
+    // Load available seasons
+    loadAvailableSeasons().then(() => loadSeasonData());
+
     // Add event listeners
     document.getElementById('season').addEventListener('change', loadSeasonData);
     document.getElementById('race').addEventListener('change', loadRaceResults);
@@ -33,18 +31,65 @@ function initializeNavigation() {
     });
 }
 
+async function loadAvailableSeasons() {
+    try {
+        // Clear any existing options
+        const seasonSelect = document.getElementById('season');
+        seasonSelect.innerHTML = '';
+
+        // Get list of seasons
+        const response = await fetchJSON('data/seasons/info.json');
+
+        // Process each season directory
+        for (const season_path of response) {
+            try {
+                // Try to load the season-info.json for each directory
+                const seasonInfo = await fetchJSON(`data/seasons/${season_path}/season-info.json`);
+
+                // Create and add option only if season-info.json exists and has a name
+                if (seasonInfo && seasonInfo.name) {
+                    const option = document.createElement('option');
+                    option.value = season_path;
+                    option.textContent = seasonInfo.name;
+                    option.index = seasonInfo.index;
+                    seasonSelect.appendChild(option)
+                }
+            } catch (error) {
+                console.log(`Skipping ${season_path}: no valid season-info.json found`);
+            }
+        }
+
+        // If no seasons were found, add a placeholder option
+        if (seasonSelect.options.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No seasons available';
+            seasonSelect.appendChild(option);
+        } else {
+            seasonSelect.selectedIndex = 0;
+        }
+    } catch (error) {
+        console.error('Error loading seasons:', error);
+        // Add error option
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Error loading seasons';
+        document.getElementById('season').appendChild(option);
+    }
+}
+
 // Load season data
 async function loadSeasonData() {
     const season = document.getElementById('season').value;
     
     try {
         // Load season information
-        const seasonData = await fetchJSON(`data/${season}/season-info.json`);
+        const seasonData = await fetchJSON(`data/seasons/${season}/season-info.json`);
         
         // Load and process all race results for the season
         const allResults = [];
         for (const race of seasonData.races) {
-            const raceResults = await fetchJSON(`data/${season}/races/${race.id}.json`);
+            const raceResults = await fetchJSON(`data/seasons/${season}/races/${race.id}.json`);
             allResults.push({
                 race: race,
                 results: raceResults
