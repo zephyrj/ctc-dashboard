@@ -3,29 +3,60 @@
   "name": "CTC Season 1",
   "races": [
     {
-      "id": "r01",
+      "result_file": "2025_2_9_21_0_RACE",
       "round": 1,
-      "name": "Monza",
-      "date": "2025-01-15"
+      "name": "Hockenheim",
+      "date": "2025-02-09"
     },
     {
-      "id": "r02",
+      "result_file": "2025_2_16_21_0_RACE",
       "round": 2,
-      "name": "Spa",
-      "date": "2025-01-22"
+      "name": "Watkins Glen",
+      "date": "2025-02-16"
+    },
+    {
+      "result_file": "2025_3_2_20_59_RACE",
+      "round": 3,
+      "name": "Estoril",
+      "date": "2025-03-02"
+    },
+    {
+      "result_file": "2025_3_9_21_0_RACE",
+      "round": 4,
+      "name": "Kyalami",
+      "date": "2025-03-09"
+    },
+    {
+      "result_file": "2025_3_23_21_2_RACE",
+      "round": 5,
+      "name": "Bathurst",
+      "date": "2025-03-23"
+    },
+    {
+      "result_file": "2025_3_30_20_3_RACE",
+      "round": 6,
+      "name": "Silverstone",
+      "date": "2025-03-30"
     }
   ],
-  "pointsSystem": {
-    "1": 25,
-    "2": 18,
-    "3": 15,
-    "4": 12,
-    "5": 10,
-    "6": 8,
-    "7": 6,
-    "8": 4,
-    "9": 2,
-    "10": 1
-  }
+  "pointsSystem": [
+    20,
+    17,
+    15,
+    13,
+    11,
+    10,
+    9,
+    8,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "polePoints": 1,
+  "dropRounds": 1
 }
 

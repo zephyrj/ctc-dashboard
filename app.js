@@ -89,7 +89,7 @@ async function loadSeasonData() {
         // Load and process all race results for the season
         const allResults = [];
         for (const race of seasonData.races) {
-            const raceResults = await fetchJSON(`data/seasons/${season}/races/${race.id}.json`);
+            const raceResults = await fetchJSON(`data/seasons/${season}/races/${race.result_file}.json`);
             allResults.push({
                 race: race,
                 results: raceResults
@@ -140,95 +140,259 @@ function addRaceOption(race) {
     }
     
     const option = document.createElement('option');
-    option.value = race.id;
+    option.value = race.result_file;
     option.textContent = `${race.round}. ${race.name}`;
     raceSelect.appendChild(option);
 }
 
-// Calculate standings from results
+// Load race results when a race is selected
+async function loadRaceResults() {
+    const race = document.getElementById('race').value;
+    const season = document.getElementById('season').value;
+    
+    if (!race) return;
+    
+    try {
+        const seasonInfo = await fetchJSON(`data/seasons/${season}/season-info.json`);
+        const selectedRace = seasonInfo.races.find(r => r.result_file === race);
+        if (!selectedRace) return;
+
+        const results = await fetchJSON(`data/seasons/${season}/races/${selectedRace.result_file}.json`);
+        displayRaceResults(results, seasonInfo.pointsSystem);
+    } catch (error) {
+        console.error('Error loading race results:', error);
+        document.querySelector('#race-results-table tbody').innerHTML = 
+            '<tr><td colspan="5" class="loading">Error loading race results</td></tr>';
+    }
+}
+
+// Helper function to convert milliseconds to a readable time format
+function formatTime(milliseconds) {
+    if (!milliseconds && milliseconds !== 0) return 'DNF';
+    
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const ms = milliseconds % 1000;
+    
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+}
+
+// Display race results in the table
+function displayRaceResults(raceData, pointsSystem) {
+    const tbody = document.querySelector('#race-results-table tbody');
+    tbody.innerHTML = '';
+    
+    // Create a map of CarId to Car data for quick lookup
+    const carsMap = new Map(raceData.Cars.map(car => [car.CarId, car]));
+    
+    // Process results
+    raceData.Result.forEach((result, position) => {
+        const car = carsMap.get(result.CarId);
+        if (!car) return; // Skip if car data not found
+        
+        const row = document.createElement('tr');
+        const finishTime = result.TotalTime ? formatTime(result.TotalTime) : 'DNF';
+        
+        row.innerHTML = `
+            <td>${position + 1}</td>
+            <td>${car.Driver.Name}</td>
+            <td>${car.Driver.Team}</td>
+            <td>${finishTime}</td>
+            <td>${getPoints(position, pointsSystem)}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add fastest lap information if available
+    if (raceData.Laps && raceData.Laps.length > 0) {
+        // Find fastest lap
+        const fastestLap = raceData.Laps.reduce((fastest, lap) => {
+            if (!fastest || (lap.LapTime && lap.LapTime < fastest.LapTime)) {
+                return lap;
+            }
+            return fastest;
+        });
+
+        if (fastestLap && fastestLap.CarId) {
+            const fastestLapCar = carsMap.get(fastestLap.CarId);
+            if (fastestLapCar) {
+                const fastestLapInfo = document.createElement('tr');
+                fastestLapInfo.classList.add('fastest-lap');
+                fastestLapInfo.innerHTML = `
+                    <td colspan="3">Fastest Lap: ${fastestLapCar.Driver.Name} - ${fastestLapCar.Driver.Team}</td>
+                    <td colspan="2">${formatTime(fastestLap.LapTime)}</td>
+                `;
+                tbody.appendChild(fastestLapInfo);
+            }
+        }
+    }
+}
+
+// Update calculateStandings function to handle the new format
 function calculateStandings(allResults, seasonData) {
-    // Initialize data structures
-    const drivers = {};
+    let drivers = {};
     const teams = {};
     const stats = {
         fastestLaps: {},
         polePositions: {},
         leadLaps: {},
-        dnfs: {}
+        dnfs: {},
+        dnss: {}
     };
     
-    // Process each race
     allResults.forEach((raceData, raceIndex) => {
         const race = raceData.race;
         const results = raceData.results;
         
+        // Create cars map for quick lookup
+        const carsMap = new Map(results.Cars.map(car => [car.CarId, car]));
+        const unclassifiedCarIds = new Set(carsMap.keys())
+
+        const total_laps = results.SessionConfig.laps;
+        
         // Process each driver's result
-        results.forEach(result => {
+        results.Result.forEach((result, position) => {
+            const car = carsMap.get(result.CarId);
+            if (!car) return;
+
+            unclassifiedCarIds.delete(car.CarId);
+
+            const unique_driver_key = car.Driver.Guid + car.Driver.Name;
             // Initialize driver if not exists
-            if (!drivers[result.driverId]) {
-                drivers[result.driverId] = {
-                    id: result.driverId,
-                    name: result.driver,
-                    team: result.team,
+            if (!drivers[unique_driver_key]) {
+                drivers[unique_driver_key] = {
+                    id: unique_driver_key,
+                    name: car.Driver.Name,
+                    team: car.Driver.Team,
                     points: 0,
                     wins: 0,
                     podiums: 0,
-                    pointsProgression: Array(allResults.length).fill(0)
+                    poles: 0,
+                    pointsProgression: Array(allResults.length).fill(0),
+                    bonusPointsProgression: Array(allResults.length).fill(0),
+                    dropped_rounds: new Set()
                 };
             }
-            
+
+            const unique_team_key = car.Model + car.Driver.Team.Name;
             // Initialize team if not exists
-            if (!teams[result.teamId]) {
-                teams[result.teamId] = {
-                    id: result.teamId,
-                    name: result.team,
+            if (!teams[unique_team_key]) {
+                teams[unique_team_key] = {
+                    id: unique_team_key,
+                    name: car.Driver.Team,
                     points: 0,
                     wins: 0,
                     podiums: 0
                 };
             }
-            
-            // Add points
-            const pointsEarned = getPoints(result.position, seasonData.pointsSystem);
-            drivers[result.driverId].points += pointsEarned;
-            teams[result.teamId].points += pointsEarned;
-            
-            // Update points progression (cumulative)
-            if (raceIndex > 0) {
-                drivers[result.driverId].pointsProgression[raceIndex] = 
-                    drivers[result.driverId].pointsProgression[raceIndex - 1] + pointsEarned;
+
+            // TODO rework stats
+            let isDNF = false;
+            if (!result.TotalTime) {
+                stats.dnfs[car.Driver.Name] = (stats.dnfs[car.Driver.Name] || 0) + 1;
+                isDNF = true;
             } else {
-                drivers[result.driverId].pointsProgression[raceIndex] = pointsEarned;
+                const percent_complete = (result.NumLaps / total_laps) * 100
+                if (percent_complete < 75) {
+                    stats.dnfs[car.Driver.Name] = (stats.dnfs[car.Driver.Name] || 0) + 1;
+                    isDNF = true;
+                }
             }
-            
-            // Count wins and podiums
-            if (result.position === 1) {
-                drivers[result.driverId].wins++;
-                teams[result.teamId].wins++;
+
+            let pointsEarned = isDNF ? 0 : getPoints(position + 1, seasonData.pointsSystem);
+            if (result.GridPosition === 1) {
+                drivers[unique_driver_key].poles++;
+                stats.polePositions[car.Driver.Name] = (stats.polePositions[car.Driver.Name] || 0) + 1;
+                drivers[unique_driver_key].points += (seasonData.polePoints || 0)
+                drivers[unique_driver_key].bonusPointsProgression[raceIndex] += (seasonData.polePoints || 0);
             }
-            if (result.position <= 3) {
-                drivers[result.driverId].podiums++;
-                teams[result.teamId].podiums++;
-            }
-            
-            // Process statistics
-            if (result.fastestLap) {
-                stats.fastestLaps[result.driverId] = (stats.fastestLaps[result.driverId] || 0) + 1;
-            }
-            if (result.polePosition) {
-                stats.polePositions[result.driverId] = (stats.polePositions[result.driverId] || 0) + 1;
-            }
-            if (result.lapsLed > 0) {
-                stats.leadLaps[result.driverId] = (stats.leadLaps[result.driverId] || 0) + result.lapsLed;
-            }
-            if (result.dnf) {
-                stats.dnfs[result.driverId] = (stats.dnfs[result.driverId] || 0) + 1;
+            drivers[unique_driver_key].points += pointsEarned;
+            teams[unique_team_key].points += pointsEarned;
+            drivers[unique_driver_key].pointsProgression[raceIndex] = pointsEarned
+
+            if (!isDNF) {
+                // Count wins and podiums
+                if (position === 0) {
+                    drivers[unique_driver_key].wins++;
+                    teams[unique_team_key].wins++;
+                }
+                if (position < 3) {
+                    drivers[unique_driver_key].podiums++;
+                    teams[unique_team_key].podiums++;
+                }
             }
         });
+
+        unclassifiedCarIds.forEach((carId, index) => {
+            const car = carsMap.get(carId);
+            if (!car) return;
+            const unique_driver_key = car.Driver.Guid + car.Driver.Name;
+            // Initialize driver if not exists
+            if (!drivers[unique_driver_key]) {
+                drivers[unique_driver_key] = {
+                    id: unique_driver_key,
+                    name: car.Driver.Name,
+                    team: car.Driver.Team,
+                    points: 0,
+                    championship_points: 0,
+                    wins: 0,
+                    podiums: 0,
+                    poles: 0,
+                    pointsProgression: Array(allResults.length).fill(0),
+                    bonusPointsProgression: Array(allResults.length).fill(0),
+                    dropped_rounds: new Set()
+                };
+            }
+
+            const unique_team_key = car.Model + car.Driver.Team.Name;
+            // Initialize team if not exists
+            if (!teams[unique_team_key]) {
+                teams[unique_team_key] = {
+                    id: unique_team_key,
+                    name: car.Driver.Team,
+                    points: 0,
+                    wins: 0,
+                    podiums: 0
+                };
+            }
+            stats.dnss[car.Driver.Name] = (stats.dnss[car.Driver.Name] || 0) + 1;
+        });
+        
+        // Find fastest lap
+        if (results.Laps && results.Laps.length > 0) {
+            const fastestLap = results.Laps.reduce((fastest, lap) => {
+                if (!fastest || (lap.LapTime && lap.LapTime < fastest.LapTime)) {
+                    return lap;
+                }
+                return fastest;
+            });
+            
+            if (fastestLap && fastestLap.CarId) {
+                const car = carsMap.get(fastestLap.CarId);
+                if (car) {
+                    stats.fastestLaps[car.Driver.Name] = (stats.fastestLaps[car.Driver.Name] || 0) + 1;
+                }
+            }
+        }
     });
-    
-    // Convert objects to sorted arrays
-    const driverStandings = Object.values(drivers).sort((a, b) => b.points - a.points);
+
+    for (let driver of Object.values(drivers)) {
+        if (seasonData.dropRounds) {
+            driver.dropped_rounds =
+                new Set(Array.from(driver.pointsProgression.keys())
+                    .sort((a, b) => driver.pointsProgression[a] - driver.pointsProgression[b])
+                    .slice(0, seasonData.dropRounds || 0))
+        }
+        driver.championship_points =
+            driver.pointsProgression
+                .filter((value, index, array)=> !(driver.dropped_rounds.has(index)))
+                .reduce((total_points, round_points) => total_points + round_points, 0);
+        driver.championship_points += driver.bonusPointsProgression.reduce((total_points, round_points) => total_points + round_points, 0);
+    }
+
+    // Count pole position points and handle drivers on the same points
+    const driverStandings = Object.values(drivers).sort((a, b) => b.championship_points - a.championship_points);
     const teamStandings = Object.values(teams).sort((a, b) => b.points - a.points);
     
     return {
@@ -241,11 +405,9 @@ function calculateStandings(allResults, seasonData) {
 // Get points based on position and points system
 function getPoints(position, pointsSystem) {
     // Default F1-style points system if not provided
-    const defaultPoints = {
-        1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 
-        6: 8, 7: 6, 8: 4, 9: 2, 10: 1
-    };
-    
+    const defaultPoints = [
+        25, 18, 15, 12, 10, 8, 6, 4, 2, 1
+    ];
     const system = pointsSystem || defaultPoints;
     return system[position] || 0;
 }
@@ -261,9 +423,11 @@ function updateDriverStandings(drivers) {
             <td>${index + 1}</td>
             <td>${driver.name}</td>
             <td>${driver.team}</td>
-            <td>${driver.points}</td>
+            <td>${driver.championship_points}</td>
             <td>${driver.wins}</td>
             <td>${driver.podiums}</td>
+            <td>${driver.poles}</td>
+            <td>${driver.points}</td>
         `;
         tbody.appendChild(row);
     });
@@ -287,41 +451,6 @@ function updateTeamStandings(teams) {
     });
 }
 
-// Load race results when a race is selected
-async function loadRaceResults() {
-    const race = document.getElementById('race').value;
-    const season = document.getElementById('season').value;
-    
-    if (!race) return;
-    
-    try {
-        const results = await fetchJSON(`data/seasons/${season}/races/${race}.json`);
-        displayRaceResults(results);
-    } catch (error) {
-        console.error('Error loading race results:', error);
-        document.querySelector('#race-results-table tbody').innerHTML = 
-            '<tr><td colspan="5" class="loading">Error loading race results</td></tr>';
-    }
-}
-
-// Display race results in the table
-function displayRaceResults(results) {
-    const tbody = document.querySelector('#race-results-table tbody');
-    tbody.innerHTML = '';
-    
-    results.forEach(result => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${result.position}</td>
-            <td>${result.driver}</td>
-            <td>${result.team}</td>
-            <td>${result.dnf ? 'DNF' : result.time}</td>
-            <td>${result.points || 0}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
 // Update statistics section
 function updateStatistics(stats) {
     // Fastest Laps
@@ -335,6 +464,9 @@ function updateStatistics(stats) {
     
     // DNFs
     displayStatList('dnfs', stats.dnfs, 'DNF');
+
+    // DNSs
+    displayStatList('dnss', stats.dnss, 'DNS');
 }
 
 // Display a statistic as a list
@@ -353,7 +485,7 @@ function displayStatList(elementId, data, unit) {
     }
     
     const list = document.createElement('ol');
-    items.slice(0, 5).forEach(item => {
+    items.forEach(item => {
         const li = document.createElement('li');
         li.textContent = `${item.driverId}: ${item.value} ${item.value === 1 ? unit : unit + 's'}`;
         list.appendChild(li);
@@ -371,12 +503,21 @@ function createDriverPointsChart(drivers, races) {
     
     // Generate colors for each driver
     const driverColors = generateColors(topDrivers.length);
-    
+
     // Create datasets
     const datasets = topDrivers.map((driver, index) => {
+        let cumulative_points = 0;
+        let progression = [];
+        driver.pointsProgression.forEach((points, round_index) => {
+            if (!(driver.dropped_rounds.has(round_index))) {
+                cumulative_points += points;
+            }
+            cumulative_points += driver.bonusPointsProgression[round_index];
+            progression.push(cumulative_points);
+        });
         return {
             label: driver.name,
-            data: driver.pointsProgression,
+            data: progression,
             borderColor: driverColors[index],
             backgroundColor: 'transparent',
             tension: 0.1
