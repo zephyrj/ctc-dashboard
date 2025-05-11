@@ -185,11 +185,15 @@ function displayRaceResults(raceData, pointsSystem) {
     
     // Create a map of CarId to Car data for quick lookup
     const carsMap = new Map(raceData.Cars.map(car => [car.CarId, car]));
+    const unclassifiedCarIds = new Set(carsMap.keys())
     
     // Process results
     raceData.Result.forEach((result, position) => {
         const car = carsMap.get(result.CarId);
         if (!car) return; // Skip if car data not found
+
+        unclassifiedCarIds.delete(car.CarId);
+        if (car.Driver.Name === 'Empty Slot') return;
         
         const row = document.createElement('tr');
         const finishTime = result.TotalTime ? formatTime(result.TotalTime) : 'DNF';
@@ -203,6 +207,25 @@ function displayRaceResults(raceData, pointsSystem) {
         `;
         tbody.appendChild(row);
     });
+    let unclassifiedCount = 0;
+    unclassifiedCarIds.forEach(carId => {
+        const car = carsMap.get(carId);
+        if (!car) return;
+        if (car.Driver.Name === 'Empty Slot') return;
+
+        const row = document.createElement('tr');
+        const finishTime = 'DNF';
+
+        row.innerHTML = `
+            <td>${raceData.Result.length + unclassifiedCount + 1}</td>
+            <td>${car.Driver.Name}</td>
+            <td>${car.Driver.Team}</td>
+            <td>${finishTime}</td>
+            <td>0</td>
+        `;
+        tbody.appendChild(row);
+        unclassifiedCount+=1;
+    })
 
     // Add fastest lap information if available
     if (raceData.Laps && raceData.Laps.length > 0) {
@@ -257,6 +280,7 @@ function calculateStandings(allResults, seasonData) {
             if (!car) return;
 
             unclassifiedCarIds.delete(car.CarId);
+            if (car.Driver.Name === 'Empty Slot') return;
 
             const unique_driver_key = car.Driver.Guid + car.Driver.Name;
             // Initialize driver if not exists
@@ -327,6 +351,7 @@ function calculateStandings(allResults, seasonData) {
         unclassifiedCarIds.forEach((carId, index) => {
             const car = carsMap.get(carId);
             if (!car) return;
+            if (car.Driver.Name === 'Empty Slot') return;
             const unique_driver_key = car.Driver.Guid + car.Driver.Name;
             // Initialize driver if not exists
             if (!drivers[unique_driver_key]) {
