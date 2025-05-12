@@ -1,0 +1,33 @@
+{
+  "index": 1,
+  "name": "Season 2",
+  "races": [
+    {
+      "result_file": "2025_5_11_20_5_RACE",
+      "round": 1,
+      "name": "Road Atlanta",
+      "date": "2025-05-11"
+    }
+  ],
+  "pointsSystem": [
+    20,
+    17,
+    15,
+    13,
+    11,
+    10,
+    9,
+    8,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "polePoints": 1,
+  "dropRounds": 1,
+  "ignoredDrivers": ["Empty Slot", "Validation Car"]
+}
+

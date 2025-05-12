@@ -1,6 +1,6 @@
 {
   "index": 0,
-  "name": "CTC Season 1",
+  "name": "Season 1",
   "races": [
     {
       "result_file": "2025_2_9_21_0_RACE",
@@ -57,6 +57,7 @@
     1
   ],
   "polePoints": 1,
-  "dropRounds": 1
+  "dropRounds": 1,
+  "ignoredDrivers": ["Empty Slot"]
 }
 

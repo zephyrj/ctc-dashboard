@@ -66,7 +66,7 @@ async function loadAvailableSeasons() {
             option.textContent = 'No seasons available';
             seasonSelect.appendChild(option);
         } else {
-            seasonSelect.selectedIndex = 0;
+            seasonSelect.selectedIndex = seasonSelect.options.length-1;
         }
     } catch (error) {
         console.error('Error loading seasons:', error);
@@ -80,8 +80,10 @@ async function loadAvailableSeasons() {
 
 // Load season data
 async function loadSeasonData() {
+    const raceSelect = document.getElementById('race');
+    raceSelect.innerHTML = '';
+
     const season = document.getElementById('season').value;
-    
     try {
         // Load season information
         const seasonData = await fetchJSON(`data/seasons/${season}/season-info.json`);
@@ -89,6 +91,9 @@ async function loadSeasonData() {
         // Load and process all race results for the season
         const allResults = [];
         for (const race of seasonData.races) {
+            if (!race.result_file) {
+                continue;
+            }
             const raceResults = await fetchJSON(`data/seasons/${season}/races/${race.result_file}.json`);
             allResults.push({
                 race: race,
@@ -105,7 +110,7 @@ async function loadSeasonData() {
         const standings = calculateStandings(allResults, seasonData);
         
         // Update UI with standings data
-        updateDriverStandings(standings.drivers);
+        updateDriverStandings(standings.drivers).catch(reason => console.error(reason));
         updateTeamStandings(standings.teams);
         updateStatistics(standings.stats);
         
@@ -135,7 +140,7 @@ function addRaceOption(race) {
     const raceSelect = document.getElementById('race');
     
     // Clear "Loading races..." option if it exists
-    if (raceSelect.options[0].value === '') {
+    if (raceSelect.options.length && raceSelect.options[0].value === '') {
         raceSelect.innerHTML = '';
     }
     
@@ -179,13 +184,14 @@ function formatTime(milliseconds) {
 }
 
 // Display race results in the table
-function displayRaceResults(raceData, pointsSystem) {
+function displayRaceResults(raceData, seasonInfo) {
     const tbody = document.querySelector('#race-results-table tbody');
     tbody.innerHTML = '';
     
     // Create a map of CarId to Car data for quick lookup
     const carsMap = new Map(raceData.Cars.map(car => [car.CarId, car]));
     const unclassifiedCarIds = new Set(carsMap.keys())
+    const ignoredDrivers = new Set(seasonInfo.ignoredDrivers || [])
     
     // Process results
     raceData.Result.forEach((result, position) => {
@@ -193,7 +199,7 @@ function displayRaceResults(raceData, pointsSystem) {
         if (!car) return; // Skip if car data not found
 
         unclassifiedCarIds.delete(car.CarId);
-        if (car.Driver.Name === 'Empty Slot') return;
+        if (ignoredDrivers.has(car.Driver.Name)) return;
         
         const row = document.createElement('tr');
         const finishTime = result.TotalTime ? formatTime(result.TotalTime) : 'DNF';
@@ -203,7 +209,7 @@ function displayRaceResults(raceData, pointsSystem) {
             <td>${car.Driver.Name}</td>
             <td>${car.Driver.Team}</td>
             <td>${finishTime}</td>
-            <td>${getPoints(position, pointsSystem)}</td>
+            <td>${getPoints(position, seasonInfo.pointsSystem)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -252,7 +258,6 @@ function displayRaceResults(raceData, pointsSystem) {
     }
 }
 
-// Update calculateStandings function to handle the new format
 function calculateStandings(allResults, seasonData) {
     let drivers = {};
     const teams = {};
@@ -263,7 +268,8 @@ function calculateStandings(allResults, seasonData) {
         dnfs: {},
         dnss: {}
     };
-    
+
+    const ignoredDrivers = new Set(seasonData.ignoredDrivers || [])
     allResults.forEach((raceData, raceIndex) => {
         const race = raceData.race;
         const results = raceData.results;
@@ -280,7 +286,7 @@ function calculateStandings(allResults, seasonData) {
             if (!car) return;
 
             unclassifiedCarIds.delete(car.CarId);
-            if (car.Driver.Name === 'Empty Slot') return;
+            if (ignoredDrivers.has(car.Driver.Name)) return;
 
             const unique_driver_key = car.Driver.Guid + car.Driver.Name;
             // Initialize driver if not exists
@@ -289,6 +295,7 @@ function calculateStandings(allResults, seasonData) {
                     id: unique_driver_key,
                     name: car.Driver.Name,
                     team: car.Driver.Team,
+                    nation: car.Driver.Nation,
                     points: 0,
                     wins: 0,
                     podiums: 0,
@@ -350,8 +357,7 @@ function calculateStandings(allResults, seasonData) {
 
         unclassifiedCarIds.forEach((carId, index) => {
             const car = carsMap.get(carId);
-            if (!car) return;
-            if (car.Driver.Name === 'Empty Slot') return;
+            if (!car || ignoredDrivers.has(car.Driver.Name)) return;
             const unique_driver_key = car.Driver.Guid + car.Driver.Name;
             // Initialize driver if not exists
             if (!drivers[unique_driver_key]) {
@@ -359,6 +365,7 @@ function calculateStandings(allResults, seasonData) {
                     id: unique_driver_key,
                     name: car.Driver.Name,
                     team: car.Driver.Team,
+                    nation: car.Driver.Nation,
                     points: 0,
                     championship_points: 0,
                     wins: 0,
@@ -403,7 +410,7 @@ function calculateStandings(allResults, seasonData) {
     });
 
     for (let driver of Object.values(drivers)) {
-        if (seasonData.dropRounds) {
+        if (seasonData.dropRounds && seasonData.dropRounds > allResults.length) {
             driver.dropped_rounds =
                 new Set(Array.from(driver.pointsProgression.keys())
                     .sort((a, b) => driver.pointsProgression[a] - driver.pointsProgression[b])
@@ -436,16 +443,44 @@ function getPoints(position, pointsSystem) {
     const system = pointsSystem || defaultPoints;
     return system[position] || 0;
 }
+const ac_to_country_code = new Map([
+    ["ENG", "gb-eng"],
+    ["SCT", "gb-sct"]
+]);
 
 // Update driver standings table
-function updateDriverStandings(drivers) {
+async function updateDriverStandings(drivers) {
     const tbody = document.querySelector('#drivers-table tbody');
     tbody.innerHTML = '';
-    
-    drivers.forEach((driver, index) => {
+
+    // Waiting for response isn't a good idea but works for now
+    let src;
+    for (const driver of drivers) {
+        const index = drivers.indexOf(driver);
         const row = document.createElement('tr');
+
+        let nation = driver.nation;
+        if (ac_to_country_code.has(nation)) {
+            src = `https://flagcdn.com/${ac_to_country_code.get(nation)}.svg`;
+        } else {
+            const flagData = await fetch(`https://restcountries.com/v3.1/alpha/${nation}`)
+                .then(response => response.json()).catch(reason => console.warn(reason));
+
+
+            const flagImg = document.createElement('img');
+            if (flagData.length) {
+                src = flagData[0].flags.svg
+                // flagImg.src = flagData[0].flags.svg;
+                // flagImg.alt = flagData[0].name.common;
+                // flagImg.classList.add('flag');
+            } else {
+                src = "https://upload.wikimedia.org/wikipedia/commons/5/50/OWF_One_World_Flag_by_Thomas_Mandl.svg"
+            }
+        }
+
         row.innerHTML = `
             <td>${index + 1}</td>
+            <td><img src="${src}" class="flag"/></td>
             <td>${driver.name}</td>
             <td>${driver.team}</td>
             <td>${driver.championship_points}</td>
@@ -455,7 +490,7 @@ function updateDriverStandings(drivers) {
             <td>${driver.points}</td>
         `;
         tbody.appendChild(row);
-    });
+    }
 }
 
 // Update team standings table
@@ -519,10 +554,12 @@ function displayStatList(elementId, data, unit) {
     element.appendChild(list);
 }
 
+let driver_points_chart;
+
 // Create driver points progression chart
 function createDriverPointsChart(drivers, races) {
     const ctx = document.getElementById('driver-points-chart').getContext('2d');
-    
+
     // Only show top 10 drivers
     const topDrivers = drivers.slice(0, 10);
     
@@ -553,7 +590,11 @@ function createDriverPointsChart(drivers, races) {
     const labels = races.map(race => race.race.name);
     
     // Create chart
-    new Chart(ctx, {
+    if (driver_points_chart) {
+        driver_points_chart.clear();
+        driver_points_chart.destroy();
+    }
+    driver_points_chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -580,15 +621,20 @@ function createDriverPointsChart(drivers, races) {
     });
 }
 
+let team_points_chart;
 // Create team points chart
 function createTeamPointsChart(teams) {
     const ctx = document.getElementById('team-points-chart').getContext('2d');
     
     // Generate colors
     const colors = generateColors(teams.length);
-    
+
+    if (team_points_chart) {
+        team_points_chart.clear();
+        team_points_chart.destroy();
+    }
     // Create chart
-    new Chart(ctx, {
+    team_points_chart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: teams.map(team => team.name),
