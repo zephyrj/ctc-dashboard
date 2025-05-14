@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
       - name: Parse result files
         uses: actions/setup-python@v5
         with:
@@ -37,8 +39,8 @@ jobs:
       - run: python parse_results.py
       - name: Commit and push parsed output files
         run: |-
-          git config user.name "Automated"
-          git config user.email "actions@users.noreply.github.com"
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
           git add -A
           timestamp=$(date -u)
           git commit -m "${timestamp}" || exit 0
