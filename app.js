@@ -110,8 +110,8 @@ async function loadSeasonData() {
         const standings = calculateStandings(allResults, seasonData);
         
         // Update UI with standings data
-        updateDriverStandings(standings.drivers).catch(reason => console.error(reason));
-        updateTeamStandings(standings.teams);
+        updateDriverStandings(season).catch(reason => console.error(reason));
+        updateTeamStandings(season).catch(reason => console.error(reason));
         updateStatistics(standings.stats);
         
         // Create charts
@@ -449,17 +449,17 @@ const ac_to_country_code = new Map([
 ]);
 
 // Update driver standings table
-async function updateDriverStandings(drivers) {
+async function updateDriverStandings(season_name) {
     const tbody = document.querySelector('#drivers-table tbody');
     tbody.innerHTML = '';
 
+    const response = await fetchJSON(`data/seasons/${season_name}/driver_standings.json`);
     // Waiting for response isn't a good idea but works for now
     let src;
-    for (const driver of drivers) {
-        const index = drivers.indexOf(driver);
+    for (const [index, entry] of response.standings.entries()) {
         const row = document.createElement('tr');
 
-        let nation = driver.nation;
+        let nation = entry.nationCode;
         if (ac_to_country_code.has(nation)) {
             src = `https://flagcdn.com/${ac_to_country_code.get(nation)}.svg`;
         } else {
@@ -481,31 +481,36 @@ async function updateDriverStandings(drivers) {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td><img src="${src}" class="flag"/></td>
-            <td>${driver.name}</td>
-            <td>${driver.team}</td>
-            <td>${driver.championship_points}</td>
-            <td>${driver.wins}</td>
-            <td>${driver.podiums}</td>
-            <td>${driver.poles}</td>
-            <td>${driver.points}</td>
+            <td>${entry.name}</td>
+            <td>${entry.team}</td>
+            <td>${entry.championshipPoints}</td>
+            <td>${entry.wins}</td>
+            <td>${entry.podiums}</td>
+            <td>${entry.poles}</td>
+            <td>${entry.bestFinish}</td>
+            <td>${entry.totalPoints}</td>
         `;
         tbody.appendChild(row);
     }
 }
 
 // Update team standings table
-function updateTeamStandings(teams) {
+async function updateTeamStandings(season_name) {
     const tbody = document.querySelector('#teams-table tbody');
     tbody.innerHTML = '';
-    
-    teams.forEach((team, index) => {
+
+    const response = await fetchJSON(`data/seasons/${season_name}/team_standings.json`);
+    response.standings.forEach((team, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${team.name}</td>
-            <td>${team.points}</td>
+            <td>${team.championshipPoints}</td>
             <td>${team.wins}</td>
             <td>${team.podiums}</td>
+            <td>${team.poles}</td>
+            <td>${team.totalPoints}</td>
+            <td>${team.bestFinish}</td>
         `;
         tbody.appendChild(row);
     });

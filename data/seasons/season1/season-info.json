@@ -39,7 +39,7 @@
       "date": "2025-03-30"
     }
   ],
-  "pointsSystem": [
+  "points_system": [
     20,
     17,
     15,
@@ -56,8 +56,9 @@
     2,
     1
   ],
-  "polePoints": 1,
-  "dropRounds": 1,
-  "ignoredDrivers": ["Empty Slot"]
+  "pole_points": 1,
+  "drop_rounds": 1,
+  "ignored_drivers": ["Empty Slot"],
+  "classification_threshold": 75
 }
 

@@ -11,7 +11,7 @@
         ],
         "Name": "Peter Ertl",
         "Nation": "DEU",
-        "Team": "",
+        "Team": "Audi Sport Team Büchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -31,7 +31,7 @@
         ],
         "Name": "Lothar Leichenberg",
         "Nation": "",
-        "Team": "",
+        "Team": "Audi Sport Team Büchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -51,7 +51,7 @@
         ],
         "Name": "Nick Holiday",
         "Nation": "USA",
-        "Team": "",
+        "Team": "Audi Sport Team Büchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -71,7 +71,7 @@
         ],
         "Name": "Jules Wylde",
         "Nation": "ITA",
-        "Team": "",
+        "Team": "Salem Felis",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_porsche_944",
@@ -91,7 +91,7 @@
         ],
         "Name": "Miles Prower",
         "Nation": "JPN",
-        "Team": "",
+        "Team": "Salem Felis",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_porsche_944",
@@ -111,7 +111,7 @@
         ],
         "Name": "David Lister",
         "Nation": "ENG",
-        "Team": "",
+        "Team": "Trotters Independent Racing Co.",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_mazda_rx7",
@@ -131,7 +131,7 @@
         ],
         "Name": "Terry Nutt",
         "Nation": "USA",
-        "Team": "",
+        "Team": "Trotters Independent Racing Co.",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_mazda_rx7",
@@ -151,7 +151,7 @@
         ],
         "Name": "Pascal Dupont",
         "Nation": "PLA",
-        "Team": "",
+        "Team": "Mazdaspeed",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_mazda_rx7",
@@ -171,7 +171,7 @@
         ],
         "Name": "Maciej Hyla",
         "Nation": "",
-        "Team": "",
+        "Team": "Mazdaspeed",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_mazda_rx7",
@@ -191,7 +191,7 @@
         ],
         "Name": "David Spiros",
         "Nation": "",
-        "Team": "",
+        "Team": "Krause Developmental Engineering ",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ford_mustang",
@@ -211,7 +211,7 @@
         ],
         "Name": "Saber Lamoureux",
         "Nation": "",
-        "Team": "",
+        "Team": "Krause Developmental Engineering",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ford_mustang",
@@ -231,7 +231,7 @@
         ],
         "Name": "Chuck Dingley",
         "Nation": "LBR",
-        "Team": "",
+        "Team": "Krause Developmental Engineering",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ford_mustang",
@@ -251,7 +251,7 @@
         ],
         "Name": "Ismael Rodríguez",
         "Nation": "ESP",
-        "Team": "",
+        "Team": "Kimura Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_nissan_r32",
@@ -271,7 +271,7 @@
         ],
         "Name": "Brock Stockman",
         "Nation": "SRB",
-        "Team": "",
+        "Team": "Kimura Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_nissan_r32",
@@ -291,7 +291,7 @@
         ],
         "Name": "Kaede Ishima",
         "Nation": "JPN",
-        "Team": "",
+        "Team": "Picko Troberg Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_bmw_m3",
@@ -311,7 +311,7 @@
         ],
         "Name": "Louis Smithfield",
         "Nation": "",
-        "Team": "",
+        "Team": "Picko Troberg Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_bmw_m3",
@@ -331,7 +331,7 @@
         ],
         "Name": "Sal Ami",
         "Nation": "",
-        "Team": "",
+        "Team": "Picko Troberg Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_bmw_m3",
@@ -351,7 +351,7 @@
         ],
         "Name": "Jarosław Stachura",
         "Nation": "POL",
-        "Team": "",
+        "Team": "Picko Troberg Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_bmw_m3",
@@ -371,7 +371,7 @@
         ],
         "Name": "Frankie Magnum",
         "Nation": "USA",
-        "Team": "",
+        "Team": "Wynns Mr Autos",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_volvo_480",
@@ -391,7 +391,7 @@
         ],
         "Name": "Aidan Polson",
         "Nation": "SCT",
-        "Team": "",
+        "Team": "Wynns Mr Autos",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_volvo_480",
@@ -411,7 +411,7 @@
         ],
         "Name": "Tito Saavedra",
         "Nation": "ARG",
-        "Team": "",
+        "Team": "Bondi Renault Sport",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_renault_11",
@@ -431,7 +431,7 @@
         ],
         "Name": "Piotr Stefanek",
         "Nation": "POL",
-        "Team": "",
+        "Team": "Bondi Renault Sport",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_renault_11",
@@ -451,7 +451,7 @@
         ],
         "Name": "Kyle McKane",
         "Nation": "USA",
-        "Team": "",
+        "Team": "Zephyr Grand Prix",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_jaguar_xjs",
@@ -471,7 +471,7 @@
         ],
         "Name": "Maddie Shepherd",
         "Nation": "GBR",
-        "Team": "",
+        "Team": "Vulcan Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_holden_vh",
@@ -491,7 +491,7 @@
         ],
         "Name": "Chris Davis",
         "Nation": "",
-        "Team": "",
+        "Team": "Toyota Racing Development",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_toyota_supra_celica",
@@ -511,7 +511,7 @@
         ],
         "Name": "Fred Bawden",
         "Nation": "GBR",
-        "Team": "",
+        "Team": "Toyota Racing Development",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_toyota_supra_celica",
@@ -531,7 +531,7 @@
         ],
         "Name": "Scott Taylor",
         "Nation": "YUG",
-        "Team": "",
+        "Team": "GOMAX Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ks_mercedes_190",
@@ -551,7 +551,7 @@
         ],
         "Name": "David Todaro",
         "Nation": "PLA",
-        "Team": "",
+        "Team": "GOMAX Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ks_mercedes_190",
@@ -571,7 +571,7 @@
         ],
         "Name": "Gunnar Olander",
         "Nation": "SWE",
-        "Team": "",
+        "Team": "GOMAX Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ks_mercedes_190",
@@ -591,7 +591,7 @@
         ],
         "Name": "Evelyn Cooke",
         "Nation": "NZL",
-        "Team": "",
+        "Team": "GOMAX Racing",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ks_mercedes_190",

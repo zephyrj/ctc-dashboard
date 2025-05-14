@@ -9,7 +9,7 @@
       "date": "2025-05-11"
     }
   ],
-  "pointsSystem": [
+  "points_system": [
     20,
     17,
     15,
@@ -28,6 +28,7 @@
   ],
   "polePoints": 1,
   "dropRounds": 1,
-  "ignoredDrivers": ["Empty Slot", "Validation Car"]
+  "ignoredDrivers": ["Empty Slot", "Validation Car"],
+  "classification_threshold": 75
 }
 

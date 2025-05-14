@@ -28,6 +28,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Parse result files
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.10'
+      - run: python parse_result.py
+      - name: Commit and push parsed output files
+        run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "${timestamp}" || exit 0
+          git pull --rebase
+          git push
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
