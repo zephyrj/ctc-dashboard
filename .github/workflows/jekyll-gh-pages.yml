@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
             python-version: '3.10'
-      - run: python parse_result.py
+      - run: python parse_results.py
       - name: Commit and push parsed output files
         run: |-
           git config user.name "Automated"
