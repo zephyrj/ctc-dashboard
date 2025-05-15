@@ -1,10 +1,9 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+name: Deploy CTC web pages with GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
-  #push:
-  #  branches: ["main"]
+  push:
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,15 +36,6 @@ jobs:
             cache: 'pip'
       - run: pip install -r requirements.txt
       - run: python parse_results.py
-      - name: Commit and push parsed output files
-        run: |-
-          git config --local user.email "github-actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git add -A
-          timestamp=$(date -u)
-          git commit -m "${timestamp}" || exit 0
-          git pull --rebase
-          git push
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
