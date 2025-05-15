@@ -203,7 +203,7 @@ function displayRaceResults(raceData, seasonInfo) {
             <td>${result.driverName}</td>
             <td>${result.teamName}</td>
             <td>${formatTime(result.totalTime)}</td>
-            <td>${getPoints(position, seasonInfo.pointsSystem)}</td>
+            <td>${getPoints(position, seasonInfo.points_system)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -420,27 +420,28 @@ async function updateDriverStandings(season_name) {
         const row = document.createElement('tr');
 
         let nation = entry.nationCode;
-        if (ac_to_country_code.has(nation)) {
-            src = `https://flagcdn.com/${ac_to_country_code.get(nation)}.svg`;
-        } else {
-            const flagData = await fetch(`https://restcountries.com/v3.1/alpha/${nation}`)
-                .then(response => response.json()).catch(reason => console.warn(reason));
-
-
-            const flagImg = document.createElement('img');
-            if (flagData.length) {
-                src = flagData[0].flags.svg
-                // flagImg.src = flagData[0].flags.svg;
-                // flagImg.alt = flagData[0].name.common;
-                // flagImg.classList.add('flag');
-            } else {
-                src = "https://upload.wikimedia.org/wikipedia/commons/5/50/OWF_One_World_Flag_by_Thomas_Mandl.svg"
-            }
-        }
+        // if (ac_to_country_code.has(nation)) {
+        //     src = `https://flagcdn.com/${ac_to_country_code.get(nation)}.svg`;
+        // } else {
+        //     const flagData = await fetch(`https://restcountries.com/v3.1/alpha/${nation}`)
+        //         .then(response => response.json()).catch(reason => console.warn(reason));
+        //
+        //
+        //     const flagImg = document.createElement('img');
+        //     if (flagData.length) {
+        //         src = flagData[0].flags.svg
+        //         // flagImg.src = flagData[0].flags.svg;
+        //         // flagImg.alt = flagData[0].name.common;
+        //         // flagImg.classList.add('flag');
+        //     } else {
+        //         src = "https://upload.wikimedia.org/wikipedia/commons/5/50/OWF_One_World_Flag_by_Thomas_Mandl.svg"
+        //     }
+        // }
         const bestFinish = entry.bestFinish == null ? "N/A" : entry.bestFinish;
+        //<td><img src="${src}" class="flag"/></td>
         row.innerHTML = `
             <td>${index + 1}</td>
-            <td><img src="${src}" class="flag"/></td>
+            <td>${nation}</td>
             <td>${entry.name}</td>
             <td>${entry.team}</td>
             <td>${entry.championshipPoints}</td>
