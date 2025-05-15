@@ -21891,23 +21891,6 @@
       "GridPosition": 10
     },
     {
-      "BallastKG": -20,
-      "BestLap": 87241,
-      "CarId": 13,
-      "CarModel": "ctc_season_2_nissan_r32",
-      "DriverGuid": "76561199089092331",
-      "DriverName": "Brock Stockman",
-      "Restrictor": 0,
-      "TotalTime": 2495583,
-      "NumLaps": 27,
-      "HasPenalty": false,
-      "PenaltyTime": 0,
-      "LapPenalty": 0,
-      "Disqualified": false,
-      "ClassID": "00000000-0000-0000-0000-000000000000",
-      "GridPosition": 8
-    },
-    {
       "BallastKG": 0,
       "BestLap": 89127,
       "CarId": 6,
@@ -21940,6 +21923,23 @@
       "Disqualified": false,
       "ClassID": "00000000-0000-0000-0000-000000000000",
       "GridPosition": 23
+    },
+    {
+      "BallastKG": -20,
+      "BestLap": 87241,
+      "CarId": 13,
+      "CarModel": "ctc_season_2_nissan_r32",
+      "DriverGuid": "76561199089092331",
+      "DriverName": "Brock Stockman",
+      "Restrictor": 0,
+      "TotalTime": 2495583,
+      "NumLaps": 27,
+      "HasPenalty": true,
+      "PenaltyTime": 5000000000,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 8
     },
     {
       "BallastKG": 0,
