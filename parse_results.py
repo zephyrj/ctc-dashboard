@@ -417,7 +417,7 @@ def main():
                 continue
             s.add_race_result(race.name, ServerSessionData.from_json_file(result_path))
 
-        s.generate_race_results(os.path.dirname(season_info_path))
+        s.generate_standings(os.path.dirname(season_info_path))
         s.generate_race_results(os.path.dirname(season_info_path))
 
 
