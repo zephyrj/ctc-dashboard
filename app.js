@@ -94,13 +94,6 @@ async function loadSeasonData() {
             if (!race.result_file) {
                 continue;
             }
-            const raceResults = await fetchJSON(`data/seasons/${season}/races/${race.result_file}.json`);
-            allResults.push({
-                race: race,
-                results: raceResults
-            });
-            
-            // Add race to race selector
             addRaceOption(race);
         }
         document.getElementById('race').selectedIndex = 0;
@@ -145,25 +138,21 @@ function addRaceOption(race) {
     }
     
     const option = document.createElement('option');
-    option.value = race.result_file;
+    option.value = race.round;
     option.textContent = `${race.round}. ${race.name}`;
     raceSelect.appendChild(option);
 }
 
 // Load race results when a race is selected
 async function loadRaceResults() {
-    const race = document.getElementById('race').value;
+    const round_num = document.getElementById('race').value;
     const season = document.getElementById('season').value;
-    
-    if (!race) return;
-    
+    //if (round_num === undefined) return;
+
     try {
         const seasonInfo = await fetchJSON(`data/seasons/${season}/season-info.json`);
-        const selectedRace = seasonInfo.races.find(r => r.result_file === race);
-        if (!selectedRace) return;
-
-        const results = await fetchJSON(`data/seasons/${season}/races/${selectedRace.result_file}.json`);
-        displayRaceResults(results, seasonInfo.pointsSystem);
+        const race_results = await fetchJSON(`data/seasons/${season}/round${round_num}_results.json`);
+        displayRaceResults(race_results, seasonInfo);
     } catch (error) {
         console.error('Error loading race results:', error);
         document.querySelector('#race-results-table tbody').innerHTML = 
@@ -187,75 +176,46 @@ function formatTime(milliseconds) {
 function displayRaceResults(raceData, seasonInfo) {
     const tbody = document.querySelector('#race-results-table tbody');
     tbody.innerHTML = '';
-    
-    // Create a map of CarId to Car data for quick lookup
-    const carsMap = new Map(raceData.Cars.map(car => [car.CarId, car]));
-    const unclassifiedCarIds = new Set(carsMap.keys())
-    const ignoredDrivers = new Set(seasonInfo.ignoredDrivers || [])
-    
-    // Process results
-    raceData.Result.forEach((result, position) => {
-        const car = carsMap.get(result.CarId);
-        if (!car) return; // Skip if car data not found
 
-        unclassifiedCarIds.delete(car.CarId);
-        if (ignoredDrivers.has(car.Driver.Name)) return;
-        
+    // Process results
+    raceData.classifications.forEach((result, position) => {
         const row = document.createElement('tr');
-        const finishTime = result.TotalTime ? formatTime(result.TotalTime) : 'DNF';
+        let finish_pos;
+        switch(result.classification) {
+            case -1:
+                finish_pos="DNF"
+                break;
+            case -2:
+                finish_pos="DSQ"
+                break;
+            case -3:
+                finish_pos="DNS"
+                break;
+            case -4:
+                finish_pos="DNE"
+                break;
+            default:
+                finish_pos=result.classification
+        }
         
         row.innerHTML = `
-            <td>${position + 1}</td>
-            <td>${car.Driver.Name}</td>
-            <td>${car.Driver.Team}</td>
-            <td>${finishTime}</td>
+            <td>${finish_pos}</td>
+            <td>${result.driverName}</td>
+            <td>${result.teamName}</td>
+            <td>${formatTime(result.totalTime)}</td>
             <td>${getPoints(position, seasonInfo.pointsSystem)}</td>
         `;
         tbody.appendChild(row);
     });
-    let unclassifiedCount = 0;
-    unclassifiedCarIds.forEach(carId => {
-        const car = carsMap.get(carId);
-        if (!car) return;
-        if (car.Driver.Name === 'Empty Slot') return;
-
-        const row = document.createElement('tr');
-        const finishTime = 'DNF';
-
-        row.innerHTML = `
-            <td>${raceData.Result.length + unclassifiedCount + 1}</td>
-            <td>${car.Driver.Name}</td>
-            <td>${car.Driver.Team}</td>
-            <td>${finishTime}</td>
-            <td>0</td>
-        `;
-        tbody.appendChild(row);
-        unclassifiedCount+=1;
-    })
 
     // Add fastest lap information if available
-    if (raceData.Laps && raceData.Laps.length > 0) {
-        // Find fastest lap
-        const fastestLap = raceData.Laps.reduce((fastest, lap) => {
-            if (!fastest || (lap.LapTime && lap.LapTime < fastest.LapTime)) {
-                return lap;
-            }
-            return fastest;
-        });
-
-        if (fastestLap && fastestLap.CarId) {
-            const fastestLapCar = carsMap.get(fastestLap.CarId);
-            if (fastestLapCar) {
-                const fastestLapInfo = document.createElement('tr');
-                fastestLapInfo.classList.add('fastest-lap');
-                fastestLapInfo.innerHTML = `
-                    <td colspan="3">Fastest Lap: ${fastestLapCar.Driver.Name} - ${fastestLapCar.Driver.Team}</td>
-                    <td colspan="2">${formatTime(fastestLap.LapTime)}</td>
+    const fastestLapInfo = document.createElement('tr');
+    fastestLapInfo.classList.add('fastest-lap');
+    fastestLapInfo.innerHTML = `
+                    <td colspan="3">Fastest Lap: ${raceData.fastLapDriver} - ${raceData.fastLapTeam}</td>
+                    <td colspan="2">${formatTime(raceData.fastLapTime)}</td>
                 `;
-                tbody.appendChild(fastestLapInfo);
-            }
-        }
-    }
+    tbody.appendChild(fastestLapInfo);
 }
 
 function calculateStandings(allResults, seasonData) {
@@ -477,7 +437,7 @@ async function updateDriverStandings(season_name) {
                 src = "https://upload.wikimedia.org/wikipedia/commons/5/50/OWF_One_World_Flag_by_Thomas_Mandl.svg"
             }
         }
-
+        const bestFinish = entry.bestFinish == null ? "N/A" : entry.bestFinish;
         row.innerHTML = `
             <td>${index + 1}</td>
             <td><img src="${src}" class="flag"/></td>
@@ -487,7 +447,7 @@ async function updateDriverStandings(season_name) {
             <td>${entry.wins}</td>
             <td>${entry.podiums}</td>
             <td>${entry.poles}</td>
-            <td>${entry.bestFinish}</td>
+            <td>${bestFinish}</td>
             <td>${entry.totalPoints}</td>
         `;
         tbody.appendChild(row);

@@ -4,7 +4,8 @@ import sys
 import pandas as pd
 from functools import reduce
 
-from generated_data import DriverStandings, DriverStandingsRow, TeamStandingsRow, TeamStandings
+from generated_data import DriverStandings, DriverStandingsRow, TeamStandingsRow, TeamStandings, RaceResultRow, \
+    RaceResults
 from metadata import SeasonInfo, RaceEvent
 from server_result_data import ServerSessionData, SessionCarData, SessionLapData, SessionResultData
 
@@ -135,15 +136,18 @@ class RaceEntrantResult(object):
 
 class RaceResult(object):
     def __init__(self):
+        self.name = None
+        self.track = None
+        self.date = None
+        self.num_laps = None
         self.entrants: dict[int, SeasonEntrant] = dict()
-        self.classifications: list[RaceEntrantResult] = list()
+        self.classifications: list[RaceResultRow] = list()
         self.pole_car_idx = None
         self.winning_time = None
         self.winning_laps_completed = None
         self.fastest_lap_car_idx = None
         self.fastest_lap_time = sys.maxsize
         self.best_lap_by_car: dict[int, int] = dict()
-        self.session_data: ServerSessionData | None = None
 
     def add_entrant(self, car_id, season_entrant):
         self.entrants[car_id] = season_entrant
@@ -158,10 +162,14 @@ class Season(object):
         self.entrants: dict[str, SeasonEntrant] = dict()
         self.race_results: list[RaceResult] = list()
 
-    def add_race_result(self, session_data: ServerSessionData):
+    def add_race_result(self, name, session_data: ServerSessionData):
         race_idx = len(self.race_results)
         dns_entrants_ids = set(self.entrants.keys())
         race_result = RaceResult()
+        race_result.name = name
+        race_result.track = f"{session_data.track_name}-{session_data.track_config}"
+        race_result.date = session_data.date
+        race_result.num_laps = session_data.session_config.laps
         for car_data in session_data.cars:
             entrant_id = SeasonEntrant.unique_id_from_car_data(car_data)
             if self.get_entrant(entrant_id) is None:
@@ -186,25 +194,40 @@ class Season(object):
             if result.grid_position == 1:
                 race_result.pole_car_idx = result.car_id
 
-            race_entry = RaceEntrantResult()
+            def nano_to_milliseconds(nanosecond):
+                return round(nanosecond / 1000000)
+
             percent_complete = (result.num_laps / race_result.winning_laps_completed) * 100
             if percent_complete < self.info.classification_threshold:
                 entrant.finish_positions.insert(race_idx, Classification.DNF)
             else:
                 entrant.finish_positions.insert(race_idx, pos_idx+1)
-            race_entry.classification = entrant.finish_positions[race_idx]
-            race_entry.season_entrant_id = entrant.unique_id
-            race_entry.result_data = result
+            race_entry = RaceResultRow(
+                classification=entrant.finish_positions[race_idx],
+                driver_name=entrant.driver.name,
+                team_name=entrant.team.team_name,
+                total_time=result.total_time,
+                num_laps=result.num_laps,
+                best_lap=result.best_lap,
+                grid_position=result.grid_position,
+                penalty_time=nano_to_milliseconds(result.penalty_time)
+            )
             race_result.classifications.append(race_entry)
 
         for entrant_id in dns_entrants_ids:
             entrant = self.entrants[entrant_id]
             entrant.finish_positions.insert(race_idx, Classification.DNS)
             entrant.qualify_positions.insert(race_idx, Classification.DNQ)
-            race_entry = RaceEntrantResult()
-            race_entry.season_entrant_id = entrant.unique_id
-            race_entry.classification = entrant.finish_positions[race_idx]
-            race_entry.result_data = None
+            race_entry = RaceResultRow(
+                classification=entrant.finish_positions[race_idx],
+                driver_name=entrant.driver.name,
+                team_name=entrant.team.team_name,
+                total_time=None,
+                num_laps=None,
+                best_lap=None,
+                grid_position=entrant.qualify_positions[race_idx],
+                penalty_time=0
+            )
             race_result.classifications.append(race_entry)
 
         self.race_results.append(race_result)
@@ -218,7 +241,7 @@ class Season(object):
         e.finish_positions = [Classification.DNE] * entered_at
         self.entrants[e.unique_id] = e
 
-    def generate_standings(self) -> (DriverStandings, TeamStandings):
+    def generate_standings(self, output_path):
         driver_rows: dict[str, DriverStandingsRow] = dict()
         team_rows: dict[str, TeamStandingsRow] = dict()
         driver_finishing_position_lookup: dict[str, list[int]] = dict()
@@ -310,9 +333,37 @@ class Season(object):
         for team_name, best_finishing_pos_list in team_finishing_position_lookup.items():
             team_rows[team_name].championship_points = count_championship_points(best_finishing_pos_list)
 
-        return (calculate_drivers_standings(driver_rows, driver_finishing_position_lookup),
-                calculate_team_standings(team_rows, team_finishing_position_lookup, len(self.entrants)))
+        write_json_file(calculate_drivers_standings(driver_rows, driver_finishing_position_lookup), os.path.join(output_path, "driver_standings.json"))
+        write_json_file(calculate_team_standings(team_rows, team_finishing_position_lookup, len(self.entrants)), os.path.join(output_path, "team_standings.json"))
 
+    def generate_race_results(self, output_path):
+        for idx, race in enumerate(self.race_results, 1):
+            # TODO we could do a sort over this so we can manually add penalties into the data
+            #      for now we can rely on the generated data being correct
+            write_json_file(
+                RaceResults(
+                    round = idx,
+                    name=race.name,
+                    track=race.track,
+                    date=race.date,
+                    num_laps=race.num_laps,
+                    winning_driver=race.classifications[0].driver_name,
+                    winning_team=race.classifications[0].team_name,
+                    winning_time=race.winning_time,
+                    pole_driver=race.entrants[race.pole_car_idx].driver.name,
+                    pole_team=race.entrants[race.pole_car_idx].team.team_name,
+                    fast_lap_driver=race.entrants[race.fastest_lap_car_idx].driver.name,
+                    fast_lap_team=race.entrants[race.fastest_lap_car_idx].team.team_name,
+                    fast_lap_time=race.fastest_lap_time,
+                    classifications=race.classifications,
+                ),
+                os.path.join(output_path, f"round{idx}_results.json"))
+
+
+def write_json_file(json_data_obj, path):
+    if os.path.isfile(path):
+        os.remove(path)
+    json_data_obj.to_json_file(path)
 
 def calculate_drivers_standings(rows: dict[str, DriverStandingsRow],
                                 finish_positions: dict[str, list[int]]) -> DriverStandings:
@@ -342,6 +393,7 @@ def _create_standings_sorted_dataframe(rows, finish_positions: dict[str, list[in
                           ascending=[False]+[False]*max_finish_pos, inplace=True)
     return dataframe
 
+
 def main():
     if not os.path.isfile(SEASONS_LIST_PATH):
         exit(0)
@@ -363,18 +415,10 @@ def main():
             result_path = os.path.join(race_dir_path, race.result_file+".json")
             if not os.path.isfile(result_path):
                 continue
-            s.add_race_result(ServerSessionData.from_json_file(result_path))
+            s.add_race_result(race.name, ServerSessionData.from_json_file(result_path))
 
-        (season_driver_standings, season_team_standings) = s.generate_standings()
-        driver_standings_path = os.path.join(os.path.dirname(season_info_path), "driver_standings.json")
-        if os.path.isfile(driver_standings_path):
-            os.remove(driver_standings_path)
-        season_driver_standings.to_json_file(driver_standings_path)
-
-        team_standings_path = os.path.join(os.path.dirname(season_info_path), "team_standings.json")
-        if os.path.isfile(team_standings_path):
-            os.remove(team_standings_path)
-        season_team_standings.to_json_file(team_standings_path)
+        s.generate_race_results(os.path.dirname(season_info_path))
+        s.generate_race_results(os.path.dirname(season_info_path))
 
 
 if __name__ == "__main__":
