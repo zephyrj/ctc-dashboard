@@ -210,8 +210,18 @@ function displayRaceResults(raceData, seasonInfo) {
 
     const tbody = document.querySelector('#race-results-table tbody');
     tbody.innerHTML = '';
-    // Process results
+
+    const winner_laps = raceData.classifications[0].numLaps;
+    console.log(winner_laps)
     raceData.classifications.forEach((result, position) => {
+        let gap;
+        if (result.classification < -1) {
+            gap = `${formatTime(null)}`
+        } else if (result.numLaps !== winner_laps) {
+            gap = `+ ${winner_laps-result.numLaps} laps`
+        } else {
+            gap = `+${formatTime(result.totalTime - raceData.winningTime)}`
+        }
         const row = document.createElement('tr');
         let finish_pos = formatClassification(result.classification)
         row.innerHTML = `
@@ -219,6 +229,7 @@ function displayRaceResults(raceData, seasonInfo) {
             <td>${result.driverName}</td>
             <td>${result.teamName}</td>
             <td>${formatTime(result.totalTime)}</td>
+            <td>${gap}</td>
             <td>${formatTime(result.bestLap)}</td>
             <td>${getPoints(position, seasonInfo.points_system)}</td>
         `;
