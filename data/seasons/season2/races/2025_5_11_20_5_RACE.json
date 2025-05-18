@@ -11,7 +11,7 @@
         ],
         "Name": "Peter Ertl",
         "Nation": "DEU",
-        "Team": "Audi Sport Team Büchel",
+        "Team": "Audi Sport Team Buchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -31,7 +31,7 @@
         ],
         "Name": "Lothar Leichenberg",
         "Nation": "",
-        "Team": "Audi Sport Team Büchel",
+        "Team": "Audi Sport Team Buchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -51,7 +51,7 @@
         ],
         "Name": "Nick Holiday",
         "Nation": "USA",
-        "Team": "Audi Sport Team Büchel",
+        "Team": "Audi Sport Team Buchel",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_audi_quattro",
@@ -191,7 +191,7 @@
         ],
         "Name": "David Spiros",
         "Nation": "",
-        "Team": "Krause Developmental Engineering ",
+        "Team": "Krause Developmental Engineering",
         "ClassID": "00000000-0000-0000-0000-000000000000"
       },
       "Model": "ctc_season_2_ford_mustang",

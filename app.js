@@ -96,7 +96,7 @@ async function loadSeasonData() {
             }
             addRaceOption(race);
         }
-        document.getElementById('race').selectedIndex = 0;
+        raceSelect.selectedIndex = raceSelect.options.length-1;
         await loadRaceResults();
         
         // Process results to generate standings

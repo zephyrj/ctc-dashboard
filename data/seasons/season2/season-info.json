@@ -7,6 +7,12 @@
       "round": 1,
       "name": "Road Atlanta",
       "date": "2025-05-11"
+    },
+    {
+      "result_file": "2025_5_18_19_59_RACE",
+      "round": 2,
+      "name": "Suzuka",
+      "date": "2025-05-18"
     }
   ],
   "points_system": [
