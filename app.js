@@ -100,16 +100,24 @@ async function loadSeasonData() {
         await loadRaceResults();
         
         // Process results to generate standings
-        const standings = calculateStandings(allResults, seasonData);
+        //const standings = calculateStandings(allResults, seasonData);
         
         // Update UI with standings data
         updateDriverStandings(season).catch(reason => console.error(reason));
         updateTeamStandings(season).catch(reason => console.error(reason));
-        updateStatistics(standings.stats);
+
+        const stats = {
+            fastestLaps: {},
+            polePositions: {},
+            leadLaps: {},
+            dnfs: {},
+            dnss: {}
+        };
+        updateStatistics(stats);
         
         // Create charts
-        createDriverPointsChart(standings.drivers, allResults);
-        createTeamPointsChart(standings.teams);
+        //createDriverPointsChart(standings.drivers, allResults);
+        //createTeamPointsChart(standings.teams);
         
     } catch (error) {
         console.error('Error loading season data:', error);
@@ -162,7 +170,7 @@ async function loadRaceResults() {
 
 // Helper function to convert milliseconds to a readable time format
 function formatTime(milliseconds) {
-    if (!milliseconds && milliseconds !== 0) return 'DNF';
+    if (!milliseconds && milliseconds !== 0) return '--:--.---';
     
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -172,226 +180,50 @@ function formatTime(milliseconds) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
 }
 
+function formatClassification(classification) {
+    switch(classification) {
+        case -1:
+            return "DNF"
+        case -2:
+            return "DSQ"
+        case -3:
+            return "DNS"
+        case -4:
+            return "DNE"
+        default:
+            return classification
+    }
+}
+
 // Display race results in the table
 function displayRaceResults(raceData, seasonInfo) {
+
+    const summary_body = document.querySelector('#race-results-summary tbody');
+    summary_body.innerHTML = '';
+    const driver_row = document.createElement('tr');
+    driver_row.innerHTML = `
+            <td><pre>${raceData.poleDriver}\n${raceData.poleTeam}</pre></td>
+            <td><pre>${raceData.winningDriver}\n${raceData.winningTeam}\n${formatTime(raceData.winningTime)}</pre></td>
+            <td><pre>${raceData.fastLapDriver}\n${raceData.fastLapTeam}\n${formatTime(raceData.fastLapTime)}</pre></td>
+        `;
+    summary_body.appendChild(driver_row);
+
     const tbody = document.querySelector('#race-results-table tbody');
     tbody.innerHTML = '';
-
     // Process results
     raceData.classifications.forEach((result, position) => {
         const row = document.createElement('tr');
-        let finish_pos;
-        switch(result.classification) {
-            case -1:
-                finish_pos="DNF"
-                break;
-            case -2:
-                finish_pos="DSQ"
-                break;
-            case -3:
-                finish_pos="DNS"
-                break;
-            case -4:
-                finish_pos="DNE"
-                break;
-            default:
-                finish_pos=result.classification
-        }
-        
+        let finish_pos = formatClassification(result.classification)
         row.innerHTML = `
             <td>${finish_pos}</td>
             <td>${result.driverName}</td>
             <td>${result.teamName}</td>
             <td>${formatTime(result.totalTime)}</td>
+            <td>${formatTime(result.bestLap)}</td>
             <td>${getPoints(position, seasonInfo.points_system)}</td>
         `;
         tbody.appendChild(row);
     });
-
-    // Add fastest lap information if available
-    const fastestLapInfo = document.createElement('tr');
-    fastestLapInfo.classList.add('fastest-lap');
-    fastestLapInfo.innerHTML = `
-                    <td colspan="3">Fastest Lap: ${raceData.fastLapDriver} - ${raceData.fastLapTeam}</td>
-                    <td colspan="2">${formatTime(raceData.fastLapTime)}</td>
-                `;
-    tbody.appendChild(fastestLapInfo);
-}
-
-function calculateStandings(allResults, seasonData) {
-    let drivers = {};
-    const teams = {};
-    const stats = {
-        fastestLaps: {},
-        polePositions: {},
-        leadLaps: {},
-        dnfs: {},
-        dnss: {}
-    };
-
-    const ignoredDrivers = new Set(seasonData.ignoredDrivers || [])
-    allResults.forEach((raceData, raceIndex) => {
-        const race = raceData.race;
-        const results = raceData.results;
-        
-        // Create cars map for quick lookup
-        const carsMap = new Map(results.Cars.map(car => [car.CarId, car]));
-        const unclassifiedCarIds = new Set(carsMap.keys())
-
-        const total_laps = results.SessionConfig.laps;
-        
-        // Process each driver's result
-        results.Result.forEach((result, position) => {
-            const car = carsMap.get(result.CarId);
-            if (!car) return;
-
-            unclassifiedCarIds.delete(car.CarId);
-            if (ignoredDrivers.has(car.Driver.Name)) return;
-
-            const unique_driver_key = car.Driver.Guid + car.Driver.Name;
-            // Initialize driver if not exists
-            if (!drivers[unique_driver_key]) {
-                drivers[unique_driver_key] = {
-                    id: unique_driver_key,
-                    name: car.Driver.Name,
-                    team: car.Driver.Team,
-                    nation: car.Driver.Nation,
-                    points: 0,
-                    wins: 0,
-                    podiums: 0,
-                    poles: 0,
-                    pointsProgression: Array(allResults.length).fill(0),
-                    bonusPointsProgression: Array(allResults.length).fill(0),
-                    dropped_rounds: new Set()
-                };
-            }
-
-            const unique_team_key = car.Model + car.Driver.Team.Name;
-            // Initialize team if not exists
-            if (!teams[unique_team_key]) {
-                teams[unique_team_key] = {
-                    id: unique_team_key,
-                    name: car.Driver.Team,
-                    points: 0,
-                    wins: 0,
-                    podiums: 0
-                };
-            }
-
-            // TODO rework stats
-            let isDNF = false;
-            if (!result.TotalTime) {
-                stats.dnfs[car.Driver.Name] = (stats.dnfs[car.Driver.Name] || 0) + 1;
-                isDNF = true;
-            } else {
-                const percent_complete = (result.NumLaps / total_laps) * 100
-                if (percent_complete < 75) {
-                    stats.dnfs[car.Driver.Name] = (stats.dnfs[car.Driver.Name] || 0) + 1;
-                    isDNF = true;
-                }
-            }
-
-            let pointsEarned = isDNF ? 0 : getPoints(position + 1, seasonData.pointsSystem);
-            if (result.GridPosition === 1) {
-                drivers[unique_driver_key].poles++;
-                stats.polePositions[car.Driver.Name] = (stats.polePositions[car.Driver.Name] || 0) + 1;
-                drivers[unique_driver_key].points += (seasonData.polePoints || 0)
-                drivers[unique_driver_key].bonusPointsProgression[raceIndex] += (seasonData.polePoints || 0);
-            }
-            drivers[unique_driver_key].points += pointsEarned;
-            teams[unique_team_key].points += pointsEarned;
-            drivers[unique_driver_key].pointsProgression[raceIndex] = pointsEarned
-
-            if (!isDNF) {
-                // Count wins and podiums
-                if (position === 0) {
-                    drivers[unique_driver_key].wins++;
-                    teams[unique_team_key].wins++;
-                }
-                if (position < 3) {
-                    drivers[unique_driver_key].podiums++;
-                    teams[unique_team_key].podiums++;
-                }
-            }
-        });
-
-        unclassifiedCarIds.forEach((carId, index) => {
-            const car = carsMap.get(carId);
-            if (!car || ignoredDrivers.has(car.Driver.Name)) return;
-            const unique_driver_key = car.Driver.Guid + car.Driver.Name;
-            // Initialize driver if not exists
-            if (!drivers[unique_driver_key]) {
-                drivers[unique_driver_key] = {
-                    id: unique_driver_key,
-                    name: car.Driver.Name,
-                    team: car.Driver.Team,
-                    nation: car.Driver.Nation,
-                    points: 0,
-                    championship_points: 0,
-                    wins: 0,
-                    podiums: 0,
-                    poles: 0,
-                    pointsProgression: Array(allResults.length).fill(0),
-                    bonusPointsProgression: Array(allResults.length).fill(0),
-                    dropped_rounds: new Set()
-                };
-            }
-
-            const unique_team_key = car.Model + car.Driver.Team.Name;
-            // Initialize team if not exists
-            if (!teams[unique_team_key]) {
-                teams[unique_team_key] = {
-                    id: unique_team_key,
-                    name: car.Driver.Team,
-                    points: 0,
-                    wins: 0,
-                    podiums: 0
-                };
-            }
-            stats.dnss[car.Driver.Name] = (stats.dnss[car.Driver.Name] || 0) + 1;
-        });
-        
-        // Find fastest lap
-        if (results.Laps && results.Laps.length > 0) {
-            const fastestLap = results.Laps.reduce((fastest, lap) => {
-                if (!fastest || (lap.LapTime && lap.LapTime < fastest.LapTime)) {
-                    return lap;
-                }
-                return fastest;
-            });
-            
-            if (fastestLap && fastestLap.CarId) {
-                const car = carsMap.get(fastestLap.CarId);
-                if (car) {
-                    stats.fastestLaps[car.Driver.Name] = (stats.fastestLaps[car.Driver.Name] || 0) + 1;
-                }
-            }
-        }
-    });
-
-    for (let driver of Object.values(drivers)) {
-        if (seasonData.dropRounds && seasonData.dropRounds > allResults.length) {
-            driver.dropped_rounds =
-                new Set(Array.from(driver.pointsProgression.keys())
-                    .sort((a, b) => driver.pointsProgression[a] - driver.pointsProgression[b])
-                    .slice(0, seasonData.dropRounds || 0))
-        }
-        driver.championship_points =
-            driver.pointsProgression
-                .filter((value, index, array)=> !(driver.dropped_rounds.has(index)))
-                .reduce((total_points, round_points) => total_points + round_points, 0);
-        driver.championship_points += driver.bonusPointsProgression.reduce((total_points, round_points) => total_points + round_points, 0);
-    }
-
-    // Count pole position points and handle drivers on the same points
-    const driverStandings = Object.values(drivers).sort((a, b) => b.championship_points - a.championship_points);
-    const teamStandings = Object.values(teams).sort((a, b) => b.points - a.points);
-    
-    return {
-        drivers: driverStandings,
-        teams: teamStandings,
-        stats: stats
-    };
 }
 
 // Get points based on position and points system
@@ -437,7 +269,7 @@ async function updateDriverStandings(season_name) {
         //         src = "https://upload.wikimedia.org/wikipedia/commons/5/50/OWF_One_World_Flag_by_Thomas_Mandl.svg"
         //     }
         // }
-        const bestFinish = entry.bestFinish == null ? "N/A" : entry.bestFinish;
+        const bestFinish = entry.bestFinish == null ? "---" : entry.bestFinish;
         //<td><img src="${src}" class="flag"/></td>
         row.innerHTML = `
             <td>${index + 1}</td>
@@ -463,6 +295,7 @@ async function updateTeamStandings(season_name) {
     const response = await fetchJSON(`data/seasons/${season_name}/team_standings.json`);
     response.standings.forEach((team, index) => {
         const row = document.createElement('tr');
+        const bestFinish = team.bestFinish == null ? "---" : team.bestFinish;
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${team.name}</td>
@@ -470,8 +303,8 @@ async function updateTeamStandings(season_name) {
             <td>${team.wins}</td>
             <td>${team.podiums}</td>
             <td>${team.poles}</td>
+            <td>${bestFinish}</td>
             <td>${team.totalPoints}</td>
-            <td>${team.bestFinish}</td>
         `;
         tbody.appendChild(row);
     });

@@ -72,8 +72,8 @@
                             <th>Wins</th>
                             <th>Podiums</th>
                             <th>Poles</th>
-                            <th>Total Points</th>
                             <th>Best Finish</th>
+                            <th>Total Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,6 +98,20 @@
                 </select>
             </div>
             <div class="race-results">
+                <table id="race-results-summary">
+                    <thead>
+                        <tr>
+                            <th>Pole</th>
+                            <th>Winner</th>
+                            <th>Fastest Lap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Race summary will be loaded here -->
+                        <tr><td colspan="5" class="loading">Select a race to view results</td></tr>
+                    </tbody>
+                </table>
+            <div class="race-results">
                 <table id="race-results-table">
                     <thead>
                         <tr>
@@ -105,6 +119,7 @@
                             <th>Driver</th>
                             <th>Team</th>
                             <th>Time/Status</th>
+                            <th>Best Lap</th>
                             <th>Points</th>
                         </tr>
                     </thead>
