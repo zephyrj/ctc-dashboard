@@ -13,6 +13,12 @@
       "round": 2,
       "name": "Suzuka",
       "date": "2025-05-18"
+    },
+    {
+      "result_file": "2025_5_25_19_56_RACE",
+      "round": 3,
+      "name": "Vallelunga",
+      "date": "2025-05-25"
     }
   ],
   "points_system": [
