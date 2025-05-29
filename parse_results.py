@@ -170,7 +170,10 @@ class Season(object):
         race_result.track = f"{session_data.track_name}-{session_data.track_config}"
         race_result.date = session_data.date
         race_result.num_laps = session_data.session_config.laps
+        ignored_driver_names = set(self.info.ignored_drivers)
         for car_data in session_data.cars:
+            if car_data.driver.name in ignored_driver_names:
+                continue
             entrant_id = SeasonEntrant.unique_id_from_car_data(car_data)
             if self.get_entrant(entrant_id) is None:
                 self.add_entrant(car_data, entered_at=race_idx)
@@ -363,7 +366,8 @@ class Season(object):
 def write_json_file(json_data_obj, path):
     if os.path.isfile(path):
         os.remove(path)
-    json_data_obj.to_json_file(path)
+
+    json_data_obj.to_json_file(path, ensure_ascii=False)
 
 def calculate_drivers_standings(rows: dict[str, DriverStandingsRow],
                                 finish_positions: dict[str, list[int]]) -> DriverStandings:
