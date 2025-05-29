@@ -218,7 +218,11 @@ function displayRaceResults(raceData, seasonInfo) {
         if (result.classification < -1) {
             gap = `${formatTime(null)}`
         } else if (result.numLaps !== winner_laps) {
-            gap = `+ ${winner_laps-result.numLaps} laps`
+            let lap_str = "lap"
+            if (winner_laps-result.numLaps > 1) {
+                lap_str += "s"
+            }
+            gap = `+ ${winner_laps-result.numLaps} ${lap_str}`
         } else {
             gap = `+${formatTime(result.totalTime - raceData.winningTime)}`
         }
