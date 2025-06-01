@@ -33,7 +33,12 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: medium;
+}
+
 body {
+    font-size: clamp(0.1rem, 2vw, 1.2rem);
     font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
@@ -49,7 +54,8 @@ body {
 
 .logo {
     display: flex;
-    height: 120px;
+    max-width: 80vw;
+    max-height: 120px;
     margin-top: 5px;
     margin-bottom: 12px;
     margin-left: -8px;
@@ -144,18 +150,34 @@ h3 {
 }
 
 /* Tables */
+.race-summary {
+    font-size: clamp(0.1rem, 1.6vw, 1.1rem);
+    font-family: Monospaced, Menlo, Monaco, Consolas, 'Courier New', monospace;
+    overflow-x: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
 .race-results {
-    font-size: 1.1rem;
+    font-size: clamp(0.1rem, 1.6vw, 1rem);
     font-family: Monospaced, Menlo, Monaco, Consolas, 'Courier New', monospace;
     overflow-x: auto;
     margin-bottom: 2rem;
 }
 
 .standings-table {
-    font-size: 1rem;
+    font-size: clamp(0.1rem, 1.6vw, 1rem);
     font-family: Monospaced, Menlo, Monaco, Consolas, 'Courier New', monospace;
     overflow-x: auto;
     margin-bottom: 2rem;
+}
+
+td, th, .left {
+    text-align: left;
+}
+
+td, th, .center {
+    text-align: center;
 }
 
 table {
@@ -166,7 +188,7 @@ table {
 }
 
 th, td {
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
     text-align: left;
     border-bottom: 1px solid var(--table-border);
 }
@@ -185,12 +207,14 @@ tbody tr:hover {
     background-color: rgba(225, 6, 0, 0.05);
 }
 
-#race-results-summary {
-    margin-bottom: 2rem;
-}
+
+
+/*#race-results-summary {*/
+/*    margin-bottom: 2rem;*/
+/*}*/
 
 #race-results-summary td {
-    font-size: 0.8rem;
+    font-size: clamp(0.2rem, 1.4vw, 0.8rem);
 }
 
 .loading {

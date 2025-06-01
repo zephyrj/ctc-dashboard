@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTC Racing League</title>
+    <title>CTC Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
@@ -40,12 +40,12 @@
                             <th>Country</th>
                             <th>Driver</th>
                             <th>Team</th>
-                            <th>Points<br>(Drop Rnd)</th>
-                            <th>Wins</th>
-                            <th>Podiums</th>
-                            <th>Poles</th>
-                            <th>Best<br>Finish</th>
-                            <th>Total<br>Points</th>
+                            <th class="center">Points<br>(Drop Rnd)</th>
+                            <th class="center">Wins</th>
+                            <th class="center">Podiums</th>
+                            <th class="center">Poles</th>
+                            <th class="center">Best<br>Finish</th>
+                            <th class="center">Total<br>Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,12 +68,12 @@
                         <tr>
                             <th>Pos</th>
                             <th>Team</th>
-                            <th>Champ.<br>Points</th>
-                            <th>Wins</th>
-                            <th>Podiums</th>
-                            <th>Poles</th>
-                            <th>Best<br>Finish</th>
-                            <th>Total<br>Points</th>
+                            <th class="center">Champ.<br>Points</th>
+                            <th class="center">Wins</th>
+                            <th class="center">Podiums</th>
+                            <th class="center">Poles</th>
+                            <th class="center">Best<br>Finish</th>
+                            <th class="center">Total<br>Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,7 +97,7 @@
                     <option value="">Loading races...</option>
                 </select>
             </div>
-            <div class="race-results">
+            <div class="race-summary">
                 <table id="race-results-summary">
                     <thead>
                         <tr>
@@ -111,6 +111,7 @@
                         <tr><td colspan="5" class="loading">Select a race to view results</td></tr>
                     </tbody>
                 </table>
+            </div>
             <div class="race-results">
                 <table id="race-results-table">
                     <thead>

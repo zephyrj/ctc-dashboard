@@ -239,13 +239,13 @@ function displayRaceResults(raceData, seasonInfo) {
             best_lap_data = '<span class="fastest">' + best_lap_data + '</span>'
         }
         row.innerHTML = `
-            <td>${finish_pos}</td>
-            <td>${result.driverName}</td>
-            <td>${result.teamName}</td>
-            <td>${total_time_data}</td>
-            <td>${gap}</td>
-            <td>${best_lap_data}</td>
-            <td>${getPoints(position, seasonInfo.points_system)}</td>
+            <td class="left">${finish_pos}</td>
+            <td class="left">${result.driverName}</td>
+            <td class="left">${result.teamName}</td>
+            <td class="left">${total_time_data}</td>
+            <td class="left">${gap}</td>
+            <td class="left">${best_lap_data}</td>
+            <td class="left">${getPoints(position, seasonInfo.points_system)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -301,12 +301,12 @@ async function updateDriverStandings(season_name) {
             <td>${nation}</td>
             <td>${entry.name}</td>
             <td>${entry.team}</td>
-            <td>${entry.championshipPoints}</td>
-            <td>${entry.wins}</td>
-            <td>${entry.podiums}</td>
-            <td>${entry.poles}</td>
-            <td>${bestFinish}</td>
-            <td>${entry.totalPoints}</td>
+            <td class="center">${entry.championshipPoints}</td>
+            <td class="center">${entry.wins}</td>
+            <td class="center">${entry.podiums}</td>
+            <td class="center">${entry.poles}</td>
+            <td class="center">${bestFinish}</td>
+            <td class="center">${entry.totalPoints}</td>
         `;
         tbody.appendChild(row);
     }
@@ -324,12 +324,12 @@ async function updateTeamStandings(season_name) {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${team.name}</td>
-            <td>${team.championshipPoints}</td>
-            <td>${team.wins}</td>
-            <td>${team.podiums}</td>
-            <td>${team.poles}</td>
-            <td>${bestFinish}</td>
-            <td>${team.totalPoints}</td>
+            <td class="center">${team.championshipPoints}</td>
+            <td class="center">${team.wins}</td>
+            <td class="center">${team.podiums}</td>
+            <td class="center">${team.poles}</td>
+            <td class="center">${bestFinish}</td>
+            <td class="center">${team.totalPoints}</td>
         `;
         tbody.appendChild(row);
     });
