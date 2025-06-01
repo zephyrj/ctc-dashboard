@@ -228,13 +228,23 @@ function displayRaceResults(raceData, seasonInfo) {
         }
         const row = document.createElement('tr');
         let finish_pos = formatClassification(result.classification)
+        let total_time_data = `${formatTime(result.totalTime)}`
+        if (result.penaltyTime > 0) {
+            total_time_data += '<br><span class="penalty">'
+            total_time_data += `+${formatTime(result.penaltyTime)}`
+            total_time_data += '</span>'
+        }
+        let best_lap_data = `${formatTime(result.bestLap)}`
+        if (raceData.fastLapTime === result.bestLap) {
+            best_lap_data = '<span class="fastest">' + best_lap_data + '</span>'
+        }
         row.innerHTML = `
             <td>${finish_pos}</td>
             <td>${result.driverName}</td>
             <td>${result.teamName}</td>
-            <td>${formatTime(result.totalTime)}</td>
+            <td>${total_time_data}</td>
             <td>${gap}</td>
-            <td>${formatTime(result.bestLap)}</td>
+            <td>${best_lap_data}</td>
             <td>${getPoints(position, seasonInfo.points_system)}</td>
         `;
         tbody.appendChild(row);

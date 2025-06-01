@@ -115,6 +115,9 @@ class SeasonEntrant(object):
                                            self.team.model_name,
                                            self.team.team_name)
 
+    def add_qualifying_result(self, race_idx, position):
+        self.qualify_positions.insert(race_idx, position)
+
     def get_finish_positions_with_drop_rounds(self, num_drop_rounds: int):
         num_finishes = len(self.finish_positions)
         drop_round_filter_index = num_finishes-num_drop_rounds if num_finishes > num_drop_rounds else num_finishes
@@ -193,7 +196,7 @@ class Season(object):
             entrant = race_result.entrants[result.car_id]
             if entrant.unique_id in dns_entrants_ids:
                 dns_entrants_ids.remove(entrant.unique_id)
-            entrant.qualify_positions.insert(race_idx, result.grid_position)
+            entrant.add_qualifying_result(race_idx, result.grid_position)
             if result.grid_position == 1:
                 race_result.pole_car_idx = result.car_id
 
@@ -220,7 +223,7 @@ class Season(object):
         for entrant_id in dns_entrants_ids:
             entrant = self.entrants[entrant_id]
             entrant.finish_positions.insert(race_idx, Classification.DNS)
-            entrant.qualify_positions.insert(race_idx, Classification.DNQ)
+            entrant.add_qualifying_result(race_idx, Classification.DNQ)
             race_entry = RaceResultRow(
                 classification=entrant.finish_positions[race_idx],
                 driver_name=entrant.driver.name,
