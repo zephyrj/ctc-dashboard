@@ -6,7 +6,17 @@
       "result_file": "2025_2_9_21_0_RACE",
       "round": 1,
       "name": "Hockenheim",
-      "date": "2025-02-09"
+      "date": "2025-02-09",
+      "images": [
+        {
+          "thumb_url": "https://i.ibb.co/XfnHc4LW/CTC-season1-Hockenheim.png",
+          "full_url": "https://i.ibb.co/tw0RVhKH/CTC-season1-Hockenheim.png"
+        },
+        {
+          "thumb_url": "https://i.ibb.co/pvKdrWsK/r1-jag.png",
+          "full_url": "https://i.ibb.co/Lzg1hQqg/r1-jag.png"
+        }
+      ]
     },
     {
       "result_file": "2025_2_16_21_0_RACE",

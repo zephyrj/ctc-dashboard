@@ -1,3 +1,5 @@
+let galleryInstance = undefined;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize navigation
     initializeNavigation();
@@ -155,12 +157,12 @@ function addRaceOption(race) {
 async function loadRaceResults() {
     const round_num = document.getElementById('race').value;
     const season = document.getElementById('season').value;
-    //if (round_num === undefined) return;
+    if (round_num === undefined) return;
 
     try {
         const seasonInfo = await fetchJSON(`data/seasons/${season}/season-info.json`);
         const race_results = await fetchJSON(`data/seasons/${season}/round${round_num}_results.json`);
-        displayRaceResults(race_results, seasonInfo);
+        displayRaceResults(race_results, document.getElementById('race').selectedIndex, seasonInfo);
     } catch (error) {
         console.error('Error loading race results:', error);
         document.querySelector('#race-results-table tbody').innerHTML = 
@@ -196,7 +198,7 @@ function formatClassification(classification) {
 }
 
 // Display race results in the table
-function displayRaceResults(raceData, seasonInfo) {
+function displayRaceResults(raceData, race_idx, seasonInfo) {
 
     const summary_body = document.querySelector('#race-results-summary tbody');
     summary_body.innerHTML = '';
@@ -212,7 +214,6 @@ function displayRaceResults(raceData, seasonInfo) {
     tbody.innerHTML = '';
 
     const winner_laps = raceData.classifications[0].numLaps;
-    console.log(winner_laps)
     raceData.classifications.forEach((result, position) => {
         let gap;
         if (result.classification < -1) {
@@ -249,6 +250,17 @@ function displayRaceResults(raceData, seasonInfo) {
         `;
         tbody.appendChild(row);
     });
+
+    let image_list = []
+    if (seasonInfo.races.length >= race_idx && "images" in seasonInfo.races[race_idx]) {
+        image_list = seasonInfo.races[race_idx].images;
+    }
+    console.log(image_list.length)
+    if (galleryInstance === undefined) {
+        new ImageGallery(image_list);
+    } else {
+        galleryInstance.reload(image_list)
+    }
 }
 
 // Get points based on position and points system
