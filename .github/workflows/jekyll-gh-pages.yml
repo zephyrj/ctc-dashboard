@@ -36,6 +36,12 @@ jobs:
             cache: 'pip'
       - run: pip install -r requirements.txt
       - run: python parse_results.py
+      - name: Push standings to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MESSAGE_0_ID: ${{ vars.MESSAGE_0_ID }}
+          MESSAGE_1_ID: ${{ vars.MESSAGE_1_ID }}
+        run: python discord_push.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
