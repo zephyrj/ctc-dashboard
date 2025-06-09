@@ -33,7 +33,7 @@ def main():
                               maxheadercolwidths=[3, None, None, 5, 5],
                               tablefmt="fancy_outline")
     lines = table.split('\n')
-    main_site_link = os.getenv("SITE_URL"),
+    main_site_link = os.getenv("SITE_URL")
     current_post_length = len(main_site_link) if main_site_link else 0
     posts = list()
     current_post_idx = 0
