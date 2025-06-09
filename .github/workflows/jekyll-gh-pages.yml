@@ -39,6 +39,7 @@ jobs:
       - name: Push standings to Discord
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
           MESSAGE_0_ID: ${{ vars.MESSAGE_0_ID }}
           MESSAGE_1_ID: ${{ vars.MESSAGE_1_ID }}
         run: python discord_push.py
