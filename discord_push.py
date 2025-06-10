@@ -52,6 +52,7 @@ def main():
         webhook = discord_webhook.DiscordWebhook(url=os.getenv("WEBHOOK_URL"),
                                                  id=os.getenv(f"MESSAGE_{post_idx}_ID"))
         post_idx+=1
+        print(f"Deleting webhook post {webhook.id}")
         webhook.delete()
 
     message_list = list()

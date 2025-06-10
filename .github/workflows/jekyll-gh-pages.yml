@@ -37,14 +37,20 @@ jobs:
             cache: 'pip'
       - run: pip install -r requirements.txt
       - run: python parse_results.py
+
+      - name: Setup env vars
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+            echo "$VARS_JSON" | jq -r 'to_entries[] | select(.key | startswith("MESSAGE")) | "\(.key)=\(.value)"' >> $GITHUB_ENV
+
       - name: Push standings to Discord
         id: discord-push
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           SITE_URL: ${{ vars.SITE_URL }}
-          MESSAGE_0_ID: ${{ vars.MESSAGE_0_ID }}
-          MESSAGE_1_ID: ${{ vars.MESSAGE_1_ID }}
         run: python discord_push.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
