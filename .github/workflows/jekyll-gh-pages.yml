@@ -61,6 +61,11 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.build.outputs.matrix)}}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
       - name: Update Repo Message Vars
         env:
           GH_TOKEN: ${{ secrets.REPO_VAR_PAT }}
