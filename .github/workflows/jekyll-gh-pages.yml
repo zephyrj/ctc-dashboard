@@ -45,7 +45,7 @@ jobs:
         run: python discord_push.py
       - name: Update Repo Message Vars
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_VAR_PAT }}
         run: |
           gh variable list
           gh variable set TEST_VAR --body "Test updating repo variables"
