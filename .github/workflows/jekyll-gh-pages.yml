@@ -43,6 +43,13 @@ jobs:
           MESSAGE_0_ID: ${{ vars.MESSAGE_0_ID }}
           MESSAGE_1_ID: ${{ vars.MESSAGE_1_ID }}
         run: python discord_push.py
+      - name: Update Repo Message Vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh variable list
+          gh variable set TEST_VAR --body "Test updating repo variables"
+          gh variable list
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
