@@ -47,17 +47,30 @@ def main():
         posts[current_post_idx].append(line)
         current_post_length += line_length
 
+    post_idx = 0
+    while os.getenv(f"MESSAGE_{post_idx}_ID", None) is not None:
+        webhook = discord_webhook.DiscordWebhook(url=os.getenv("WEBHOOK_URL"),
+                                                 id=os.getenv(f"MESSAGE_{post_idx}_ID"))
+        post_idx+=1
+        webhook.delete()
+
+    message_list = list()
     for (idx,lines) in enumerate(posts):
         t = '\n'.join(lines)
-        webhook = discord_webhook.DiscordWebhook(url=os.getenv("WEBHOOK_URL"),
-                                                 id=os.getenv(f"MESSAGE_{idx}_ID", None))
+        webhook = discord_webhook.DiscordWebhook(url=os.getenv("WEBHOOK_URL"))
         content = ""
         if main_site_link and idx == 0:
             content += main_site_link + '\n'
         content += f"```{t}```"
         print(content)
         webhook.content=content
-        webhook.edit()
+        webhook.execute()
+        print(webhook.id)
+        message_list.append({"num": str(idx), "id": str(webhook.id)})
+
+    matrix_dict = {"include": message_list}
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+        f.write(f"matrix={json.dumps(matrix_dict)}")
 
 if __name__ == "__main__":
     main()

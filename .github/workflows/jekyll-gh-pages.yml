@@ -21,9 +21,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discord-push.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,19 +38,13 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python parse_results.py
       - name: Push standings to Discord
+        id: discord-push
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           SITE_URL: ${{ vars.SITE_URL }}
           MESSAGE_0_ID: ${{ vars.MESSAGE_0_ID }}
           MESSAGE_1_ID: ${{ vars.MESSAGE_1_ID }}
         run: python discord_push.py
-      - name: Update Repo Message Vars
-        env:
-          GH_TOKEN: ${{ secrets.REPO_VAR_PAT }}
-        run: |
-          gh variable list
-          gh variable set TEST_VAR --body "Test updating repo variables"
-          gh variable list
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
@@ -60,7 +55,20 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
-  # Deployment job
+  update-vars:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.build.outputs.matrix)}}
+    steps:
+      - name: Update Repo Message Vars
+        env:
+          GH_TOKEN: ${{ secrets.REPO_VAR_PAT }}
+        run: |
+          gh variable list
+          gh variable set MESSAGE_${{ matrix.num }}_ID --body ${{ matrix.id }}
+          gh variable list
+
   deploy:
     environment:
       name: github-pages
