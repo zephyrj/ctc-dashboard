@@ -19370,23 +19370,6 @@
       "GridPosition": 8
     },
     {
-      "BallastKG": 40,
-      "BestLap": 79197,
-      "CarId": 7,
-      "CarModel": "ctc_season_2_mazda_rx7",
-      "DriverGuid": "76561198006424357",
-      "DriverName": "Pascal Dupont",
-      "Restrictor": 0,
-      "TotalTime": 2431832,
-      "NumLaps": 30,
-      "HasPenalty": false,
-      "PenaltyTime": 0,
-      "LapPenalty": 0,
-      "Disqualified": false,
-      "ClassID": "00000000-0000-0000-0000-000000000000",
-      "GridPosition": 9
-    },
-    {
       "BallastKG": 0,
       "BestLap": 79067,
       "CarId": 19,
@@ -19402,6 +19385,23 @@
       "Disqualified": false,
       "ClassID": "00000000-0000-0000-0000-000000000000",
       "GridPosition": 13
+    },
+    {
+      "BallastKG": 40,
+      "BestLap": 79197,
+      "CarId": 7,
+      "CarModel": "ctc_season_2_mazda_rx7",
+      "DriverGuid": "76561198006424357",
+      "DriverName": "Pascal Dupont",
+      "Restrictor": 0,
+      "TotalTime": 2431832,
+      "NumLaps": 30,
+      "HasPenalty": true,
+      "PenaltyTime": 5000000000,
+      "LapPenalty": 0,
+      "Disqualified": false,
+      "ClassID": "00000000-0000-0000-0000-000000000000",
+      "GridPosition": 9
     },
     {
       "BallastKG": 0,
