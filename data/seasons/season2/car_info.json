@@ -1,0 +1,38 @@
+{
+  "ctc_season_2_ks_mercedes_190": {
+    "badge": "assets/badge/monochrome/mercedes-benz.svg"
+  },
+  "ctc_season_2_nissan_r32": {
+    "badge": "assets/badge/monochrome/nissan.svg"
+  },
+  "ctc_season_2_mazda_rx7": {
+    "badge": "assets/badge/monochrome/mazda.svg"
+  },
+  "ctc_season_2_holden_vh": {
+    "badge": "assets/badge/monochrome/holden.png"
+  },
+  "ctc_season_2_renault_11": {
+    "badge": "assets/badge/monochrome/renault-alt.svg"
+  },
+  "ctc_season_2_toyota_supra_celica": {
+    "badge": "assets/badge/monochrome/toyota.svg"
+  },
+  "ctc_season_2_ford_mustang": {
+    "badge": "assets/badge/monochrome/ford.svg"
+  },
+  "ctc_season_2_bmw_m3": {
+    "badge": "assets/badge/monochrome/bmw.svg"
+  },
+  "ctc_season_2_volvo_480": {
+    "badge": "assets/badge/monochrome/volvo.svg"
+  },
+  "ctc_season_2_porsche_944": {
+    "badge": "assets/badge/monochrome/porsche.svg"
+  },
+  "ctc_season_2_jaguar_xjs": {
+    "badge": "assets/badge/monochrome/jaguar-alt.svg"
+  },
+  "ctc_season_2_audi_quattro": {
+    "badge": "assets/badge/monochrome/audi.svg"
+  }
+}

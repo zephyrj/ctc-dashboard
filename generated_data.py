@@ -66,3 +66,19 @@ class TeamStandingsRow(JSONWizard, JSONFileWizard, key_case='AUTO'):
 @dataclass
 class TeamStandings(JSONWizard, JSONFileWizard, key_case='AUTO'):
     standings: list[TeamStandingsRow] = field(default_factory=list)
+
+
+@dataclass
+class ModelStandingsRow(JSONWizard, JSONFileWizard, key_case='AUTO'):
+    model: str
+    championship_points: int
+    wins: int
+    podiums: int
+    poles: int
+    total_points: int
+    best_finish: int | None = None
+
+
+@dataclass
+class ModelStandings(JSONWizard, JSONFileWizard, key_case='AUTO'):
+    standings: list[ModelStandingsRow] = field(default_factory=list)

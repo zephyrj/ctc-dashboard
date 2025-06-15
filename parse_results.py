@@ -5,7 +5,7 @@ import pandas as pd
 from functools import reduce
 
 from generated_data import DriverStandings, DriverStandingsRow, TeamStandingsRow, TeamStandings, RaceResultRow, \
-    RaceResults
+    RaceResults, ModelStandingsRow
 from metadata import SeasonInfo, RaceEvent
 from server_result_data import ServerSessionData, SessionCarData, SessionLapData, SessionResultData
 
@@ -22,7 +22,6 @@ class Team(object):
     @staticmethod
     def from_session_car_data(car_data: SessionCarData):
         return Team(car_data.model, car_data.driver.team)
-
 
     @staticmethod
     def get_unique_id_for(model_name, team_name):
@@ -128,6 +127,10 @@ class SeasonEntrant(object):
         if best_pos == sys.maxsize:
             return None
         return best_pos
+
+
+class StandingsCalculator(object):
+    pass
 
 
 class RaceEntrantResult(object):
@@ -250,9 +253,11 @@ class Season(object):
     def generate_standings(self, output_path):
         driver_rows: dict[str, DriverStandingsRow] = dict()
         team_rows: dict[str, TeamStandingsRow] = dict()
+        model_rows: dict[str, ModelStandingsRow] = dict()
         driver_finishing_position_lookup: dict[str, list[int]] = dict()
         # TODO need somthing more fleshed out to handle multiple team scores
         team_finishing_position_lookup: dict[str, list[int]] = dict()
+        model_finishing_position_lookup: dict[str, list[int]] = dict()
 
         def count_championship_points(finish_positions):
             return sum(map(lambda pos: self.info.points_system[pos-1] if pos-1 < len(self.info.points_system) else 0,
@@ -263,6 +268,13 @@ class Season(object):
                 return min(first, second) if second > 0 else first
             else:
                 return second if second > 0 else max(first, second)
+
+        def update_best_finish_pos(collection, key, finish_positions):
+            if key not in collection:
+                collection[key] = finish_positions
+            else:
+                collection[key] = [select_best_finish_pos(collection[key][idx], pos)
+                                   for (idx, pos) in enumerate(finish_positions)]
 
         for uid, entrant in self.entrants.items():
             wins = entrant.finish_positions.count(1)
@@ -277,6 +289,8 @@ class Season(object):
             else:
                 team_finishing_position_lookup[team_name] = [select_best_finish_pos(team_finishing_position_lookup[team_name][idx], pos)
                                                              for (idx, pos) in enumerate(entrant.finish_positions)]
+
+            update_best_finish_pos(model_finishing_position_lookup, entrant.team.model_name, entrant.finish_positions)
 
             if team_name not in team_rows:
                 team_rows[team_name] = TeamStandingsRow(

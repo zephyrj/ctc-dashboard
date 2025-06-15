@@ -25,6 +25,12 @@
       "round": 4,
       "name": "Riverside",
       "date": "2025-06-08"
+    },
+    {
+      "result_file": "2025_6_15_19_58_RACE",
+      "round": 5,
+      "name": "Tor Poznań",
+      "date": "2025-06-15"
     }
   ],
   "points_system": [

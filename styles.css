@@ -61,6 +61,12 @@ body {
     margin-left: -8px;
 }
 
+@media (prefers-color-scheme: dark) {
+    .chassis-logo {
+        filter: invert(.9)
+    }
+}
+
 /* Header Styles */
 header {
     background-color: var(--primary-color);
@@ -172,6 +178,10 @@ h3 {
     margin-bottom: 2rem;
 }
 
+#teams-table {
+    font-size: clamp(0.1rem, 1.6vw, 1.1rem);
+}
+
 td, th, .left {
     text-align: left;
 }
@@ -193,10 +203,15 @@ th, td {
     border-bottom: 1px solid var(--table-border);
 }
 
+td {
+    vertical-align: center;
+}
+
 th {
     background-color: var(--primary-color);
     color: var(--light-text);
     font-weight: 500;
+    vertical-align: bottom;
 }
 
 tbody tr:nth-child(even) {
@@ -206,8 +221,6 @@ tbody tr:nth-child(even) {
 tbody tr:hover {
     background-color: rgba(225, 6, 0, 0.05);
 }
-
-
 
 /*#race-results-summary {*/
 /*    margin-bottom: 2rem;*/
