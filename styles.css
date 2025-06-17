@@ -175,6 +175,7 @@ h3 {
     font-size: clamp(0.1rem, 1.6vw, 1rem);
     font-family: Monospaced, Menlo, Monaco, Consolas, 'Courier New', monospace;
     overflow-x: auto;
+    overflow-y: hidden;
     margin-bottom: 2rem;
 }
 
@@ -188,6 +189,11 @@ td, th, .left {
 
 td, th, .center {
     text-align: center;
+}
+
+td, .no-pad {
+    padding-right: 0;
+    padding-left: 0;
 }
 
 table {

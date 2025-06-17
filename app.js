@@ -100,7 +100,11 @@ async function loadSeasonData() {
         }
         raceSelect.selectedIndex = raceSelect.options.length-1;
         await loadRaceResults();
-        const car_info = await fetchJSON(`data/seasons/${season}/car_info.json`).catch(reason => {
+        const team_info = await fetchJSON(`data/seasons/${season}/team-info.json`).catch(reason => {
+            console.warn("Failed to load car info for season." + reason);
+            {}
+        });
+        const car_info = await fetchJSON(`data/seasons/${season}/car-info.json`).catch(reason => {
             console.warn("Failed to load car info for season." + reason);
             {}
         });
@@ -109,7 +113,7 @@ async function loadSeasonData() {
         
         // Update UI with standings data
         updateDriverStandings(season).catch(reason => console.error(reason));
-        updateTeamStandings(season, car_info).catch(reason => console.error(reason));
+        updateTeamStandings(season, team_info, car_info).catch(reason => console.error(reason));
 
         const stats = {
             fastestLaps: {},
@@ -328,7 +332,7 @@ async function updateDriverStandings(season_name) {
 }
 
 // Update team standings table
-async function updateTeamStandings(season_name, car_info) {
+async function updateTeamStandings(season_name, team_info, car_info) {
     const tbody = document.querySelector('#teams-table tbody');
     tbody.innerHTML = '';
 
@@ -336,16 +340,25 @@ async function updateTeamStandings(season_name, car_info) {
     response.standings.forEach((team, index) => {
         const row = document.createElement('tr');
         const bestFinish = team.bestFinish == null ? "---" : team.bestFinish;
+
+        const team_name = team.name;
+        let profile_html = `<div style='display: flex; align-items: center; justify-content: center'>`
+        if (team_info && team_name in team_info && "car-profile" in team_info[team_name]) {
+            profile_html += `<img crossorigin="anonymous" src=${team_info[team_name]["car-profile"]} alt="Car side-on profile" style='padding: 0 0.8vw 0 0; height: clamp(0.4rem, 2vw, 5rem);  object-fit: contain'/>`
+        }
+        profile_html += `</div>`
+
         const ac_car = team.car;
         let badge_html = `<div style='display: flex; align-items: center; justify-content: center'>`
-        if (ac_car in car_info && "badge" in car_info[ac_car]) {
+        if (car_info && ac_car in car_info && "badge" in car_info[ac_car]) {
             badge_html += `<img class="chassis-logo" src=${car_info[ac_car]["badge"]} alt="Manufacturer logo" style='height: clamp(0.4rem, 2vw, 3rem); object-fit: contain'/>`
         }
         badge_html += `</div>`
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${team.name}</td>
-            <td class="center">${badge_html}</td>
+            <td class="no-pad" class="center">${profile_html}</td>
+            <td class="no-pad" class="center">${badge_html}</td>
             <td class="center">${team.championshipPoints}</td>
             <td class="center">${team.wins}</td>
             <td class="center">${team.podiums}</td>
