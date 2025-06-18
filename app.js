@@ -344,7 +344,7 @@ async function updateTeamStandings(season_name, team_info, car_info) {
         const team_name = team.name;
         let profile_html = `<div style='display: flex; align-items: center; justify-content: center'>`
         if (team_info && team_name in team_info && "car-profile" in team_info[team_name]) {
-            profile_html += `<img src=${team_info[team_name]["car-profile"]} alt="Car side-on profile" style='padding: 0 0.8vw 0 0; height: clamp(0.4rem, 2vw, 5rem);  object-fit: contain'/>`
+            profile_html += `<img crossorigin="anonymous" src=${team_info[team_name]["car-profile"]} alt="Car side-on profile" style='padding: 0 0.8vw 0 0; height: clamp(0.4rem, 2vw, 5rem);  object-fit: contain'/>`
         }
         profile_html += `</div>`
 
